@@ -18,6 +18,15 @@ export const appModules = [
     showOnDashboard: true,
   },
   {
+    id: 'firms',
+    title: 'Firmen',
+    description: 'Globale Firmen und Mitarbeiter.',
+    href: '/firms',
+    active: true,
+    showInMainNav: true,
+    showOnDashboard: true,
+  },
+  {
     id: 'documents',
     title: 'Dokumente',
     description: 'In Vorbereitung.',

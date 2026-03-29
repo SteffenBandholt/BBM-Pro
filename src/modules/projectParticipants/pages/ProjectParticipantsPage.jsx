@@ -1,20 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useProjectParticipants } from '../hooks/useProjectParticipants.js';
-
-const fakeGlobalFirms = [
-  {
-    id: 101,
-    name: 'Elektro GmbH',
-    type: 'global',
-    employees: [{ id: 201, name: 'Peter Strom', role: 'Elektriker' }],
-  },
-  {
-    id: 102,
-    name: 'Sanitär AG',
-    type: 'global',
-    employees: [{ id: 202, name: 'Hans Wasser', role: 'Installateur' }],
-  },
-];
+import { listFirms } from '../../firms/services/firmsService.js';
 
 export default function ProjectParticipantsPage() {
   const {
@@ -32,6 +18,28 @@ export default function ProjectParticipantsPage() {
   const [newFirmName, setNewFirmName] = useState('');
   const [newEmployeeName, setNewEmployeeName] = useState('');
   const [newEmployeeRole, setNewEmployeeRole] = useState('');
+  const [globalFirms, setGlobalFirms] = useState([]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const loadGlobalFirms = async () => {
+      try {
+        const items = await listFirms();
+        if (isActive) {
+          setGlobalFirms(items);
+        }
+      } catch {
+        // optional: kein Fehlerhandling notwendig für diesen Schritt
+      }
+    };
+
+    loadGlobalFirms();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   return (
     <section className="project-participants">
@@ -50,7 +58,7 @@ export default function ProjectParticipantsPage() {
         <section className="project-participants__panel">
           <h2>Globale Firma auswählen</h2>
           <ul className="project-participants__list">
-            {fakeGlobalFirms.map((firm) => (
+            {globalFirms.map((firm) => (
               <li key={firm.id}>
                 <button
                   type="button"
