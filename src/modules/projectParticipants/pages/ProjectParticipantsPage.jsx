@@ -35,7 +35,10 @@ export default function ProjectParticipantsPage() {
                     }
                     onClick={() => setSelectedFirm(firm)}
                   >
-                    {firm.name}
+                    <span className="project-participants__firm-name">{firm.name}</span>
+                    <span className="project-participants__firm-meta">
+                      {firm.type === 'global' ? 'Global' : 'Projektfirma'} · {firm.employees.length} Mitarbeiter
+                    </span>
                   </button>
                 </li>
               ))}
@@ -45,21 +48,28 @@ export default function ProjectParticipantsPage() {
           <section className="project-participants__panel">
             <h2>Details</h2>
             {!selectedFirm ? (
-              <p>Keine Firma ausgewählt</p>
+              <p>Bitte wählen Sie links eine Firma aus.</p>
             ) : (
               <>
                 <div className="project-participants__card">
                   <p className="project-participants__label">Visitenkarte</p>
-                  <p>{selectedFirm.name}</p>
-                  <p>Typ: {selectedFirm.type === 'global' ? 'global' : 'projektfirma'}</p>
+                  <p className="project-participants__card-title">{selectedFirm.name}</p>
+                  <span className="project-participants__badge">
+                    {selectedFirm.type === 'global' ? 'Global' : 'Projektfirma'}
+                  </span>
+                  <p className="project-participants__card-placeholder">Adresse: -</p>
+                  <p className="project-participants__card-placeholder">Kontakt: -</p>
                 </div>
 
                 <div>
-                  <p className="project-participants__label">Mitarbeiter</p>
+                  <p className="project-participants__label">Mitarbeiter im Projekt</p>
                   <ul className="project-participants__employees">
                     {selectedFirm.employees.map((employee) => (
                       <li key={employee.id}>
-                        {employee.name} - {employee.role}
+                        <article className="project-participants__employee-card">
+                          <p className="project-participants__employee-name">{employee.name}</p>
+                          <p className="project-participants__employee-role">{employee.role}</p>
+                        </article>
                       </li>
                     ))}
                   </ul>

@@ -361,6 +361,18 @@ a {
   font-weight: 700;
 }
 
+.project-participants__firm-name {
+  display: block;
+  font-weight: 700;
+}
+
+.project-participants__firm-meta {
+  display: block;
+  margin-top: 0.2rem;
+  color: #5a6a80;
+  font-size: 0.92rem;
+}
+
 .project-participants__card {
   border: 1px solid #d6deea;
   border-radius: 0.75rem;
@@ -369,8 +381,47 @@ a {
   margin-bottom: 1rem;
 }
 
+.project-participants__card-title {
+  margin: 0 0 0.4rem;
+  font-weight: 700;
+}
+
+.project-participants__badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  background: #e7eef8;
+  color: #102033;
+  font-size: 0.85rem;
+  margin-bottom: 0.6rem;
+}
+
+.project-participants__card-placeholder {
+  margin: 0.25rem 0 0;
+  color: #5a6a80;
+}
+
 .project-participants__label {
   margin: 0 0 0.4rem;
+  color: #5a6a80;
+  font-size: 0.92rem;
+}
+
+.project-participants__employee-card {
+  border: 1px solid #d6deea;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  padding: 0.75rem 0.85rem;
+}
+
+.project-participants__employee-name {
+  margin: 0;
+  font-weight: 700;
+}
+
+.project-participants__employee-role {
+  margin: 0.2rem 0 0;
   color: #5a6a80;
   font-size: 0.92rem;
 }
