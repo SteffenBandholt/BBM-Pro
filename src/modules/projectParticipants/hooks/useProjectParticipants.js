@@ -95,6 +95,15 @@ export function useProjectParticipants() {
     setSelectedFirm(firm);
   };
 
+  const removeFirmFromProject = (firmId) => {
+    setFirms((prev) => prev.filter((firm) => firm.id !== firmId));
+
+    setSelectedFirm((prev) => {
+      if (!prev || prev.id !== firmId) return prev;
+      return null;
+    });
+  };
+
   return {
     firms,
     selectedFirm,
@@ -104,5 +113,6 @@ export function useProjectParticipants() {
     createProjectFirm,
     addEmployeeToProjectFirm,
     assignGlobalFirm,
+    removeFirmFromProject,
   };
 }

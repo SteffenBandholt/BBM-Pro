@@ -26,6 +26,7 @@ export default function ProjectParticipantsPage() {
     createProjectFirm,
     addEmployeeToProjectFirm,
     assignGlobalFirm,
+    removeFirmFromProject,
   } = useProjectParticipants();
   const [mode, setMode] = useState(null);
   const [newFirmName, setNewFirmName] = useState('');
@@ -149,6 +150,26 @@ export default function ProjectParticipantsPage() {
                   </span>
                   <p className="project-participants__card-placeholder">Adresse: -</p>
                   <p className="project-participants__card-placeholder">Kontakt: -</p>
+                </div>
+
+                <div className="project-participants__actions">
+                  {selectedFirm.type === 'project' ? (
+                    <button
+                      type="button"
+                      className="button button--secondary"
+                      onClick={() => removeFirmFromProject(selectedFirm.id)}
+                    >
+                      Projektfirma löschen
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="button button--secondary"
+                      onClick={() => removeFirmFromProject(selectedFirm.id)}
+                    >
+                      Aus Projekt entfernen
+                    </button>
+                  )}
                 </div>
 
                 <div>
