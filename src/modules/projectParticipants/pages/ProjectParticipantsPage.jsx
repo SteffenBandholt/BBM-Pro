@@ -1,6 +1,21 @@
 import { useState } from 'react';
 import { useProjectParticipants } from '../hooks/useProjectParticipants.js';
 
+const fakeGlobalFirms = [
+  {
+    id: 101,
+    name: 'Elektro GmbH',
+    type: 'global',
+    employees: [{ id: 201, name: 'Peter Strom', role: 'Elektriker' }],
+  },
+  {
+    id: 102,
+    name: 'Sanitär AG',
+    type: 'global',
+    employees: [{ id: 202, name: 'Hans Wasser', role: 'Installateur' }],
+  },
+];
+
 export default function ProjectParticipantsPage() {
   const {
     firms,
@@ -10,6 +25,7 @@ export default function ProjectParticipantsPage() {
     error,
     createProjectFirm,
     addEmployeeToProjectFirm,
+    assignGlobalFirm,
   } = useProjectParticipants();
   const [mode, setMode] = useState(null);
   const [newFirmName, setNewFirmName] = useState('');
@@ -32,7 +48,25 @@ export default function ProjectParticipantsPage() {
       {mode === 'assign' ? (
         <section className="project-participants__panel">
           <h2>Globale Firma auswählen</h2>
-          <p>Auswahl wird hier später implementiert.</p>
+          <ul className="project-participants__list">
+            {fakeGlobalFirms.map((firm) => (
+              <li key={firm.id}>
+                <button
+                  type="button"
+                  className="project-participants__firm-button"
+                  onClick={() => {
+                    assignGlobalFirm(firm);
+                    setMode(null);
+                  }}
+                >
+                  <span className="project-participants__firm-name">{firm.name}</span>
+                  <span className="project-participants__firm-meta">
+                    Global · {firm.employees.length} Mitarbeiter
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
           <button type="button" className="button button--secondary" onClick={() => setMode(null)}>
             Schließen
           </button>

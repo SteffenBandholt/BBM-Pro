@@ -85,6 +85,16 @@ export function useProjectParticipants() {
     });
   };
 
+  const assignGlobalFirm = (firm) => {
+    setFirms((prev) => {
+      if (prev.some((existingFirm) => existingFirm.id === firm.id)) return prev;
+
+      return [firm, ...prev];
+    });
+
+    setSelectedFirm(firm);
+  };
+
   return {
     firms,
     selectedFirm,
@@ -93,5 +103,6 @@ export function useProjectParticipants() {
     error,
     createProjectFirm,
     addEmployeeToProjectFirm,
+    assignGlobalFirm,
   };
 }
