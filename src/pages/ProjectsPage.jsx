@@ -6,6 +6,7 @@ import { useProjects } from '../modules/projects/hooks/useProjects.js';
 export default function ProjectsPage() {
   const { projects, loading, error, createProject } = useProjects();
   const [isCreating, setIsCreating] = useState(false);
+  const [selectedProject, setSelectedProject] = useState(null);
 
   const handleCreateClick = () => {
     setIsCreating(true);
@@ -16,12 +17,16 @@ export default function ProjectsPage() {
   };
 
   const handleSubmitCreate = async (input) => {
-    await createProject(input);
-    setIsCreating(false);
+    try {
+      await createProject(input);
+      setIsCreating(false);
+    } catch {
+      // Fehler wird im Hook gesetzt und oben angezeigt.
+    }
   };
 
   const handleProjectClick = (project) => {
-    console.log('Projekt geklickt:', project);
+    setSelectedProject(project);
   };
 
   return (
@@ -39,6 +44,26 @@ export default function ProjectsPage() {
       {isCreating ? <ProjectForm onSubmit={handleSubmitCreate} onCancel={handleCancelCreate} /> : null}
 
       {!loading && !error ? <ProjectList projects={projects} onProjectClick={handleProjectClick} /> : null}
+
+      {selectedProject ? (
+        <aside className="project-detail">
+          <h2>Projekt-Details</h2>
+          <dl>
+            <div>
+              <dt>Name</dt>
+              <dd>{selectedProject.name || '-'}</dd>
+            </div>
+            <div>
+              <dt>Nummer</dt>
+              <dd>{selectedProject.number || '-'}</dd>
+            </div>
+            <div>
+              <dt>Ort</dt>
+              <dd>{selectedProject.city || '-'}</dd>
+            </div>
+          </dl>
+        </aside>
+      ) : null}
     </section>
   );
 }

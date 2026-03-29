@@ -36,9 +36,15 @@ export function useProjects() {
   }, []);
 
   const createProject = useCallback(async (input) => {
-    const createdProject = await createProjectService(input);
-    setProjects((currentProjects) => [createdProject, ...currentProjects]);
-    return createdProject;
+    try {
+      const createdProject = await createProjectService(input);
+      setProjects((currentProjects) => [createdProject, ...currentProjects]);
+      setError('');
+      return createdProject;
+    } catch {
+      setError('Projekt konnte nicht angelegt werden.');
+      throw new Error('Projekt konnte nicht angelegt werden.');
+    }
   }, []);
 
   return {
