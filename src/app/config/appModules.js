@@ -11,9 +11,10 @@ export const appModules = [
   {
     id: 'defects',
     title: 'Mängelmanagement',
-    description: 'In Vorbereitung.',
-    active: false,
-    showInMainNav: false,
+    description: 'Erfassung und Verwaltung von Mängeln.',
+    href: '/defects',
+    active: true,
+    showInMainNav: true,
     showOnDashboard: true,
   },
   {
