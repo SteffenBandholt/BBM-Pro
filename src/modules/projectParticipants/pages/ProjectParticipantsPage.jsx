@@ -1,20 +1,52 @@
+import { useState } from 'react';
 import { useProjectParticipants } from '../hooks/useProjectParticipants.js';
 
 export default function ProjectParticipantsPage() {
   const { firms, selectedFirm, setSelectedFirm, loading, error } = useProjectParticipants();
+  const [mode, setMode] = useState(null);
 
   return (
     <section className="project-participants">
       <h1>Projektbeteiligte</h1>
 
       <div className="project-participants__actions">
-        <button type="button" className="button">
+        <button type="button" className="button" onClick={() => setMode('assign')}>
           Firma zuordnen
         </button>
-        <button type="button" className="button button--secondary">
+        <button type="button" className="button button--secondary" onClick={() => setMode('create')}>
           Firma mit Mitarbeitern anlegen
         </button>
       </div>
+
+      {mode === 'assign' ? (
+        <section className="project-participants__panel">
+          <h2>Globale Firma auswählen</h2>
+          <p>Auswahl wird hier später implementiert.</p>
+          <button type="button" className="button button--secondary" onClick={() => setMode(null)}>
+            Schließen
+          </button>
+        </section>
+      ) : null}
+
+      {mode === 'create' ? (
+        <section className="project-participants__panel">
+          <h2>Projektfirma anlegen</h2>
+
+          <label className="field">
+            <span>Firmenname</span>
+            <input placeholder="Name der Firma" />
+          </label>
+
+          <div className="form-actions">
+            <button type="button" className="button">
+              Anlegen
+            </button>
+            <button type="button" className="button button--secondary" onClick={() => setMode(null)}>
+              Abbrechen
+            </button>
+          </div>
+        </section>
+      ) : null}
 
       {loading ? <p>Lade Projektbeteiligte ...</p> : null}
       {error ? <p className="form-error">{error}</p> : null}
