@@ -1,12 +1,13 @@
-﻿import { useState } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ProjectForm from '../modules/projects/components/ProjectForm.jsx';
 import ProjectList from '../modules/projects/components/ProjectList.jsx';
 import { useProjects } from '../modules/projects/hooks/useProjects.js';
 
 export default function ProjectsPage() {
   const { projects, loading, error, createProject } = useProjects();
+  const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false);
-  const [selectedProject, setSelectedProject] = useState(null);
 
   const handleCreateClick = () => {
     setIsCreating(true);
@@ -26,7 +27,7 @@ export default function ProjectsPage() {
   };
 
   const handleProjectClick = (project) => {
-    setSelectedProject(project);
+    navigate(`/projects/${project.id}`);
   };
 
   return (
@@ -44,26 +45,6 @@ export default function ProjectsPage() {
       {isCreating ? <ProjectForm onSubmit={handleSubmitCreate} onCancel={handleCancelCreate} /> : null}
 
       {!loading && !error ? <ProjectList projects={projects} onProjectClick={handleProjectClick} /> : null}
-
-      {selectedProject ? (
-        <aside className="project-detail">
-          <h2>Projekt-Details</h2>
-          <dl>
-            <div>
-              <dt>Name</dt>
-              <dd>{selectedProject.name || '-'}</dd>
-            </div>
-            <div>
-              <dt>Nummer</dt>
-              <dd>{selectedProject.number || '-'}</dd>
-            </div>
-            <div>
-              <dt>Ort</dt>
-              <dd>{selectedProject.city || '-'}</dd>
-            </div>
-          </dl>
-        </aside>
-      ) : null}
     </section>
   );
 }
