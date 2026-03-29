@@ -87,6 +87,23 @@ a {
   margin-bottom: 1.5rem;
 }
 
+.projects-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.projects-header h1 {
+  margin: 0 0 0.35rem;
+}
+
+.projects-header p {
+  margin: 0;
+  color: #5a6a80;
+}
+
 .dashboard-header {
   display: flex;
   align-items: flex-end;

@@ -9,7 +9,7 @@ export default function HomePage() {
   const { modules, projects, loading, error } = useDashboard();
 
   const handleNewProject = () => {
-    navigate('/projects');
+    navigate('/projects?mode=create');
   };
 
   const handleGoToProjects = () => {

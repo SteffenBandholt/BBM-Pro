@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import ProjectForm from '../modules/projects/components/ProjectForm.jsx';
 import ProjectList from '../modules/projects/components/ProjectList.jsx';
 import { useProjects } from '../modules/projects/hooks/useProjects.js';
@@ -7,20 +6,21 @@ import { useProjects } from '../modules/projects/hooks/useProjects.js';
 export default function ProjectsPage() {
   const { projects, loading, error, createProject } = useProjects();
   const navigate = useNavigate();
-  const [isCreating, setIsCreating] = useState(false);
+  const [searchParams] = useSearchParams();
+  const isCreating = searchParams.get('mode') === 'create';
 
   const handleCreateClick = () => {
-    setIsCreating(true);
+    navigate('/projects?mode=create');
   };
 
   const handleCancelCreate = () => {
-    setIsCreating(false);
+    navigate('/projects');
   };
 
   const handleSubmitCreate = async (input) => {
     try {
       await createProject(input);
-      setIsCreating(false);
+      navigate('/projects');
     } catch {
       // Fehler wird im Hook gesetzt und oben angezeigt.
     }
@@ -32,19 +32,25 @@ export default function ProjectsPage() {
 
   return (
     <section className="page-section">
-      <div className="page-header">
-        <h1>Projekte</h1>
+      <div className="projects-header">
+        <div>
+          <h1>Projekte</h1>
+          <p>Arbeitsbereich für Projektübersicht, Anlage und Detailnavigation.</p>
+        </div>
         <button type="button" className="button" onClick={handleCreateClick}>
-          Projekt anlegen
+          Neues Projekt
         </button>
       </div>
 
       {loading ? <p>Lade Projekte ...</p> : null}
       {error ? <p className="form-error">{error}</p> : null}
 
-      {isCreating ? <ProjectForm onSubmit={handleSubmitCreate} onCancel={handleCancelCreate} /> : null}
-
-      {!loading && !error ? <ProjectList projects={projects} onProjectClick={handleProjectClick} /> : null}
+      {isCreating ? (
+        <ProjectForm onSubmit={handleSubmitCreate} onCancel={handleCancelCreate} submitLabel="Projekt speichern" />
+      ) : null}
+      {!loading && !error ? (
+        <ProjectList projects={projects} onProjectClick={handleProjectClick} />
+      ) : null}
     </section>
   );
 }
