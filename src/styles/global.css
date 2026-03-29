@@ -310,3 +310,27 @@ a {
   color: #b42318;
   margin: 0;
 }
+
+.defects-list {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.defect-card {
+  border: 1px solid #d6deea;
+  border-radius: 0.9rem;
+  background: #ffffff;
+  padding: 1rem;
+}
+
+.defect-card__title {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.defect-card__meta {
+  display: block;
+  color: #5a6a80;
+}
