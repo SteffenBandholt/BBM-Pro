@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { useProjectParticipants } from '../hooks/useProjectParticipants.js';
 
 export default function ProjectParticipantsPage() {
-  const { firms, selectedFirm, setSelectedFirm, loading, error } = useProjectParticipants();
+  const { firms, selectedFirm, setSelectedFirm, loading, error, createProjectFirm } =
+    useProjectParticipants();
   const [mode, setMode] = useState(null);
+  const [newFirmName, setNewFirmName] = useState('');
 
   return (
     <section className="project-participants">
@@ -34,11 +36,24 @@ export default function ProjectParticipantsPage() {
 
           <label className="field">
             <span>Firmenname</span>
-            <input placeholder="Name der Firma" />
+            <input
+              value={newFirmName}
+              onChange={(e) => setNewFirmName(e.target.value)}
+              placeholder="Name der Firma"
+            />
           </label>
 
           <div className="form-actions">
-            <button type="button" className="button">
+            <button
+              type="button"
+              className="button"
+              onClick={() => {
+                if (!newFirmName.trim()) return;
+                createProjectFirm(newFirmName.trim());
+                setNewFirmName('');
+                setMode(null);
+              }}
+            >
               Anlegen
             </button>
             <button type="button" className="button button--secondary" onClick={() => setMode(null)}>

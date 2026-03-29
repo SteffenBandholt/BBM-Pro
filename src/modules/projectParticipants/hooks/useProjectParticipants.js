@@ -36,11 +36,24 @@ export function useProjectParticipants() {
     };
   }, []);
 
+  const createProjectFirm = (name) => {
+    const newFirm = {
+      id: Date.now(),
+      name,
+      type: 'project',
+      employees: [],
+    };
+
+    setFirms((prev) => [newFirm, ...prev]);
+    setSelectedFirm(newFirm);
+  };
+
   return {
     firms,
     selectedFirm,
     setSelectedFirm,
     loading,
     error,
+    createProjectFirm,
   };
 }
