@@ -44,6 +44,10 @@ export default function ProjectDetailPage() {
     navigate(`/projects/${projectId}/participants`);
   };
 
+  const handleMeetingsClick = () => {
+    navigate(`/projects/${projectId}/meetings`);
+  };
+
   const handleCancelEdit = () => {
     setIsEditing(false);
     setLocalError('');
@@ -66,6 +70,9 @@ export default function ProjectDetailPage() {
       </button>
       <button type="button" className="button" onClick={handleParticipantsClick}>
         Projektbeteiligte
+      </button>
+      <button type="button" className="button button--secondary" onClick={handleMeetingsClick}>
+        Besprechungen
       </button>
 
       <div className="project-detail-header">
