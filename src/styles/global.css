@@ -311,6 +311,30 @@ a {
   margin: 0;
 }
 
+.project-participants {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.project-participants__actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.project-participants__layout {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 1rem;
+}
+
+.project-participants__panel {
+  border: 1px solid #d6deea;
+  border-radius: 0.9rem;
+  background: #ffffff;
+  padding: 1rem;
+}
+
 .defects-list {
   display: grid;
   gap: 0.75rem;

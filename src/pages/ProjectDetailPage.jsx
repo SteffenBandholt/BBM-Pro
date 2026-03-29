@@ -40,6 +40,10 @@ export default function ProjectDetailPage() {
     navigate('/projects');
   };
 
+  const handleParticipantsClick = () => {
+    navigate(`/projects/${projectId}/participants`);
+  };
+
   const handleCancelEdit = () => {
     setIsEditing(false);
     setLocalError('');
@@ -59,6 +63,9 @@ export default function ProjectDetailPage() {
     <section className="page-section">
       <button type="button" className="button button--secondary" onClick={handleBackClick}>
         Zurück zu Projekten
+      </button>
+      <button type="button" className="button" onClick={handleParticipantsClick}>
+        Projektbeteiligte
       </button>
 
       <div className="project-detail-header">
