@@ -1,0 +1,145 @@
+:root {
+  color-scheme: light;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #102033;
+  background: #f5f7fb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+  margin: 0;
+}
+
+body {
+  min-height: 100vh;
+}
+
+button,
+a {
+  font: inherit;
+}
+
+.app-shell {
+  min-height: 100vh;
+}
+
+.topbar {
+  background: #ffffff;
+  border-bottom: 1px solid #dbe3ee;
+  padding: 1rem 1.5rem;
+}
+
+.nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-link {
+  color: #4b5b70;
+  text-decoration: none;
+  padding: 0.35rem 0.6rem;
+  border-radius: 0.5rem;
+}
+
+.nav-link.active {
+  color: #0f172a;
+  background: #e7eef8;
+}
+
+.content {
+  padding: 2rem 1.5rem;
+}
+
+.page-section {
+  max-width: 900px;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.button {
+  border: 0;
+  border-radius: 0.75rem;
+  background: #1f4fd6;
+  color: white;
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+}
+
+.project-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.project-card {
+  width: 100%;
+  text-align: left;
+  border: 1px solid #d6deea;
+  border-radius: 0.9rem;
+  background: white;
+  padding: 1rem;
+  cursor: pointer;
+}
+.button--secondary {
+  background: #e7eef8;
+  color: #102033;
+}
+
+.project-card__name {
+  display: block;
+  font-weight: 700;
+}
+
+.project-card__meta {
+  display: block;
+  margin-top: 0.25rem;
+  color: #5a6a80;
+  font-size: 0.95rem;
+}
+
+.project-form {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid #d6deea;
+  border-radius: 0.9rem;
+  background: white;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.field input {
+  border: 1px solid #c9d5e5;
+  border-radius: 0.65rem;
+  padding: 0.75rem 0.85rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.form-error {
+  color: #b42318;
+  margin: 0;
+}
