@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import ProjectForm from '../modules/projects/components/ProjectForm.jsx';
+import ProjectSummaryCard from '../modules/projects/components/ProjectSummaryCard.jsx';
+import ProjectWorkspaceGrid from '../modules/projects/components/ProjectWorkspaceGrid.jsx';
+import { projectWorkspaces } from '../modules/projects/data/projectWorkspaces.js';
 import { useProjects } from '../modules/projects/hooks/useProjects.js';
 
 export default function ProjectDetailPage() {
@@ -55,11 +58,20 @@ export default function ProjectDetailPage() {
   return (
     <section className="page-section">
       <button type="button" className="button button--secondary" onClick={handleBackClick}>
-        ← Zurück zu Projekte
+        Zurück zu Projekte
       </button>
-      <h1>{project.name || 'Projekt'}</h1>
-      <p>Projekt-Details</p>
+
+      <div className="project-detail-header">
+        <div>
+          <h1>{project.name || 'Projekt'}</h1>
+          <p>Projekt-Details</p>
+        </div>
+      </div>
+
       {localError ? <p className="form-error">{localError}</p> : null}
+
+      <ProjectSummaryCard project={project} />
+
       {isEditing ? (
         <ProjectForm
           initialValues={project}
@@ -68,26 +80,12 @@ export default function ProjectDetailPage() {
           submitLabel="Speichern"
         />
       ) : (
-        <>
-          <button type="button" className="button" onClick={handleStartEdit}>
-            Bearbeiten
-          </button>
-          <dl>
-            <div>
-              <dt>Name</dt>
-              <dd>{project.name || '-'}</dd>
-            </div>
-            <div>
-              <dt>Nummer</dt>
-              <dd>{project.number || '-'}</dd>
-            </div>
-            <div>
-              <dt>Ort</dt>
-              <dd>{project.city || '-'}</dd>
-            </div>
-          </dl>
-        </>
+        <button type="button" className="button" onClick={handleStartEdit}>
+          Bearbeiten
+        </button>
       )}
+
+      <ProjectWorkspaceGrid workspaces={projectWorkspaces} />
     </section>
   );
 }

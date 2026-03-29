@@ -79,6 +79,19 @@ a {
   max-width: 900px;
 }
 
+.project-detail-header {
+  margin: 1rem 0 1.25rem;
+}
+
+.project-detail-header h1 {
+  margin: 0 0 0.35rem;
+}
+
+.project-detail-header p {
+  margin: 0;
+  color: #5a6a80;
+}
+
 .page-header {
   display: flex;
   align-items: center;
@@ -139,6 +152,75 @@ a {
 
 .project-card--static {
   cursor: default;
+}
+
+.project-summary-card,
+.project-workspace-card {
+  border: 1px solid #d6deea;
+  border-radius: 0.9rem;
+  background: #ffffff;
+  padding: 1rem;
+}
+
+.project-summary-card {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.project-summary-card__label {
+  display: block;
+  color: #5a6a80;
+  font-size: 0.92rem;
+  margin-bottom: 0.2rem;
+}
+
+.project-summary-card h2 {
+  margin: 0;
+}
+
+.project-summary-card__details,
+.project-summary-card__details div {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.project-summary-card__details {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.project-summary-card__details dt,
+.project-workspace-card__meta {
+  color: #5a6a80;
+}
+
+.project-summary-card__details dd {
+  margin: 0;
+  font-weight: 700;
+}
+
+.project-workspace-section {
+  margin-top: 1.5rem;
+}
+
+.project-workspace-section h2 {
+  margin: 0 0 0.75rem;
+}
+
+.project-workspace-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 0.75rem;
+}
+
+.project-workspace-card--active {
+  border-color: #1f4fd6;
+}
+
+.project-workspace-card__title {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
 }
 
 .button {
