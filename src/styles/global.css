@@ -199,6 +199,11 @@ a {
   font-weight: 700;
 }
 
+.project-summary-card__description {
+  margin: 0;
+  color: #102033;
+}
+
 .project-workspace-section {
   margin-top: 1.5rem;
 }
@@ -285,6 +290,15 @@ a {
   border: 1px solid #c9d5e5;
   border-radius: 0.65rem;
   padding: 0.75rem 0.85rem;
+}
+
+.field select,
+.field textarea {
+  border: 1px solid #c9d5e5;
+  border-radius: 0.65rem;
+  padding: 0.75rem 0.85rem;
+  font: inherit;
+  background: #ffffff;
 }
 
 .form-actions {

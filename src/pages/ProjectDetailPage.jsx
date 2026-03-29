@@ -58,7 +58,7 @@ export default function ProjectDetailPage() {
   return (
     <section className="page-section">
       <button type="button" className="button button--secondary" onClick={handleBackClick}>
-        Zurück zu Projekte
+        Zurück zu Projekten
       </button>
 
       <div className="project-detail-header">
