@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import ProjectForm from '../modules/projects/components/ProjectForm.jsx';
 import { useProjects } from '../modules/projects/hooks/useProjects.js';
 
 export default function ProjectDetailPage() {
   const { projectId } = useParams();
+  const navigate = useNavigate();
   const { projects, loading, error, updateProject } = useProjects();
   const [isEditing, setIsEditing] = useState(false);
   const [localError, setLocalError] = useState('');
@@ -32,6 +33,10 @@ export default function ProjectDetailPage() {
     setIsEditing(true);
   };
 
+  const handleBackClick = () => {
+    navigate('/projects');
+  };
+
   const handleCancelEdit = () => {
     setIsEditing(false);
     setLocalError('');
@@ -49,7 +54,11 @@ export default function ProjectDetailPage() {
 
   return (
     <section className="page-section">
-      <h1>Projekt-Details</h1>
+      <button type="button" className="button button--secondary" onClick={handleBackClick}>
+        ← Zurück zu Projekte
+      </button>
+      <h1>{project.name || 'Projekt'}</h1>
+      <p>Projekt-Details</p>
       {localError ? <p className="form-error">{localError}</p> : null}
       {isEditing ? (
         <ProjectForm
