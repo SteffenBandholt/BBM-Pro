@@ -1,3 +1,1 @@
-export default function HomePage() {
-  return <h1>BBM-Pro React App</h1>;
-}
+export { default } from '../modules/dashboard/pages/HomePage.jsx';
