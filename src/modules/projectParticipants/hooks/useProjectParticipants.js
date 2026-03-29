@@ -16,7 +16,15 @@ export function useProjectParticipants() {
         setError('');
         const items = await listProjectParticipants();
         if (isActive) {
-          setFirms(items);
+          const normalizedItems = items.map((firm) => ({
+            ...firm,
+            employees: firm.employees.map((employee) => ({
+              ...employee,
+              active: employee.active ?? true,
+            })),
+          }));
+
+          setFirms(normalizedItems);
         }
       } catch {
         if (isActive) {
