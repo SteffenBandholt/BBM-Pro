@@ -48,6 +48,43 @@ export function useProjectParticipants() {
     setSelectedFirm(newFirm);
   };
 
+  const addEmployeeToProjectFirm = (firmId, employeeInput) => {
+    const employeeId = Date.now();
+
+    setFirms((prev) =>
+      prev.map((firm) => {
+        if (firm.id !== firmId || firm.type !== 'project') return firm;
+
+        const newEmployee = {
+          id: employeeId,
+          name: employeeInput.name,
+          role: employeeInput.role,
+        };
+
+        return {
+          ...firm,
+          employees: [newEmployee, ...firm.employees],
+        };
+      }),
+    );
+
+    setSelectedFirm((prev) => {
+      if (!prev || prev.id !== firmId || prev.type !== 'project') return prev;
+
+      return {
+        ...prev,
+        employees: [
+          {
+            id: employeeId,
+            name: employeeInput.name,
+            role: employeeInput.role,
+          },
+          ...prev.employees,
+        ],
+      };
+    });
+  };
+
   return {
     firms,
     selectedFirm,
@@ -55,5 +92,6 @@ export function useProjectParticipants() {
     loading,
     error,
     createProjectFirm,
+    addEmployeeToProjectFirm,
   };
 }

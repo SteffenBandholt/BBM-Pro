@@ -2,10 +2,19 @@ import { useState } from 'react';
 import { useProjectParticipants } from '../hooks/useProjectParticipants.js';
 
 export default function ProjectParticipantsPage() {
-  const { firms, selectedFirm, setSelectedFirm, loading, error, createProjectFirm } =
-    useProjectParticipants();
+  const {
+    firms,
+    selectedFirm,
+    setSelectedFirm,
+    loading,
+    error,
+    createProjectFirm,
+    addEmployeeToProjectFirm,
+  } = useProjectParticipants();
   const [mode, setMode] = useState(null);
   const [newFirmName, setNewFirmName] = useState('');
+  const [newEmployeeName, setNewEmployeeName] = useState('');
+  const [newEmployeeRole, setNewEmployeeRole] = useState('');
 
   return (
     <section className="project-participants">
@@ -121,6 +130,48 @@ export default function ProjectParticipantsPage() {
                     ))}
                   </ul>
                 </div>
+
+                {selectedFirm.type === 'project' ? (
+                  <div className="project-participants__panel">
+                    <h3>Mitarbeiter hinzufügen</h3>
+
+                    <label className="field">
+                      <span>Name</span>
+                      <input
+                        value={newEmployeeName}
+                        onChange={(e) => setNewEmployeeName(e.target.value)}
+                      />
+                    </label>
+
+                    <label className="field">
+                      <span>Rolle</span>
+                      <input
+                        value={newEmployeeRole}
+                        onChange={(e) => setNewEmployeeRole(e.target.value)}
+                      />
+                    </label>
+
+                    <div className="form-actions">
+                      <button
+                        type="button"
+                        className="button"
+                        onClick={() => {
+                          if (!newEmployeeName.trim()) return;
+
+                          addEmployeeToProjectFirm(selectedFirm.id, {
+                            name: newEmployeeName.trim(),
+                            role: newEmployeeRole.trim(),
+                          });
+
+                          setNewEmployeeName('');
+                          setNewEmployeeRole('');
+                        }}
+                      >
+                        Mitarbeiter hinzufügen
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
               </>
             )}
           </section>
