@@ -9,3 +9,7 @@ export async function listProjects() {
 export async function createProject(input) {
   return projectsDataSource.createProject(input);
 }
+
+export async function updateProject(projectId, input) {
+  return projectsDataSource.updateProject(projectId, input);
+}

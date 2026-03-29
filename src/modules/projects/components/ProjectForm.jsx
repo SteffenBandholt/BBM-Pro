@@ -1,10 +1,22 @@
-﻿import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-export default function ProjectForm({ onSubmit, onCancel }) {
-  const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
-  const [city, setCity] = useState('');
+export default function ProjectForm({
+  onSubmit,
+  onCancel,
+  initialValues = {},
+  submitLabel = 'Speichern',
+}) {
+  const [name, setName] = useState(initialValues.name ?? '');
+  const [number, setNumber] = useState(initialValues.number ?? '');
+  const [city, setCity] = useState(initialValues.city ?? '');
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    setName(initialValues.name ?? '');
+    setNumber(initialValues.number ?? '');
+    setCity(initialValues.city ?? '');
+    setError('');
+  }, [initialValues.name, initialValues.number, initialValues.city]);
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -41,7 +53,7 @@ export default function ProjectForm({ onSubmit, onCancel }) {
 
       <div className="form-actions">
         <button type="submit" className="button">
-          Speichern
+          {submitLabel}
         </button>
         <button type="button" className="button button--secondary" onClick={onCancel}>
           Cancel

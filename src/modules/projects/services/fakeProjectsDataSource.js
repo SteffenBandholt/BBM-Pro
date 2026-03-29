@@ -25,3 +25,25 @@ export async function createProject(input) {
 
   return createdProject;
 }
+
+export async function updateProject(projectId, input) {
+  const index = projectsStore.findIndex((project) => String(project.id) === String(projectId));
+
+  if (index === -1) {
+    throw new Error('Projekt konnte nicht gefunden werden.');
+  }
+
+  const updatedProject = normalizeProject({
+    ...projectsStore[index],
+    ...input,
+    id: projectsStore[index].id,
+  });
+
+  projectsStore = [
+    ...projectsStore.slice(0, index),
+    updatedProject,
+    ...projectsStore.slice(index + 1),
+  ];
+
+  return updatedProject;
+}

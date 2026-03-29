@@ -5,3 +5,7 @@ export async function listProjects() {
 export async function createProject(input) {
   throw new Error('apiProjectsDataSource.createProject noch nicht implementiert.');
 }
+
+export async function updateProject(projectId, input) {
+  throw new Error('apiProjectsDataSource.updateProject noch nicht implementiert.');
+}
