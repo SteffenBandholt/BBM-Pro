@@ -267,7 +267,12 @@ function MeetingTopTree({
 
 export default function MeetingDetailPage() {
   const { meetingId } = useParams();
-  const [meeting, setMeeting] = useState({ isClosed: false });
+  const [meeting, setMeeting] = useState({
+    id: meetingId,
+    title: `Besprechung ${meetingId}`,
+    date: new Date().toISOString().slice(0, 10),
+    isClosed: false,
+  });
   const [participants, setParticipants] = useState([]);
   const [tops, setTops] = useState(() => createInitialMeetingTops());
   const [newTopParentId, setNewTopParentId] = useState(null);
@@ -420,8 +425,8 @@ export default function MeetingDetailPage() {
       <div className="meeting-detail__header">
         <div>
           <h1>Besprechung</h1>
-          <p className="meeting-detail__meta">Meeting-Titel: {meetingId}</p>
-          <p className="meeting-detail__meta">Datum: -</p>
+          <p className="meeting-detail__meta">Meeting-Titel: {meeting.title}</p>
+          <p className="meeting-detail__meta">Datum: {meeting.date}</p>
         </div>
         <button
           type="button"
