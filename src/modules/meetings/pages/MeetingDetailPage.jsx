@@ -8,6 +8,8 @@ export default function MeetingDetailPage() {
     { id: 2, name: 'Anna Becker', firmName: 'Bauunternehmen Müller' },
   ];
   const [participants, setParticipants] = useState([]);
+  const [tops, setTops] = useState([]);
+  const [newTopText, setNewTopText] = useState('');
 
   const addParticipant = (participant) => {
     setParticipants((currentParticipants) => {
@@ -23,6 +25,18 @@ export default function MeetingDetailPage() {
     setParticipants((currentParticipants) =>
       currentParticipants.filter((participant) => participant.id !== participantId),
     );
+  };
+
+  const addTop = () => {
+    if (!newTopText.trim()) return;
+
+    const newTop = {
+      id: Date.now(),
+      text: newTopText.trim(),
+    };
+
+    setTops((current) => [newTop, ...current]);
+    setNewTopText('');
   };
 
   return (
@@ -75,6 +89,31 @@ export default function MeetingDetailPage() {
             ))}
           </ul>
         </div>
+      </section>
+
+      <section className="project-participants__panel">
+        <h2>TOPs</h2>
+
+        <label className="field">
+          <span>Neuer TOP</span>
+          <input value={newTopText} onChange={(event) => setNewTopText(event.target.value)} />
+        </label>
+
+        <div className="form-actions">
+          <button type="button" className="button" onClick={addTop}>
+            TOP hinzufügen
+          </button>
+        </div>
+
+        <ul className="project-participants__employees">
+          {tops.map((top) => (
+            <li key={top.id}>
+              <article className="project-participants__employee-card">
+                <p className="project-participants__employee-name">{top.text}</p>
+              </article>
+            </li>
+          ))}
+        </ul>
       </section>
     </section>
   );
