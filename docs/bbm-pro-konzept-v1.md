@@ -138,3 +138,58 @@ Globale Stammdaten und projektlokale Daten sind strikt getrennt.
 
 Alle künftigen fachlichen Ergänzungen oder Präzisierungen werden nur hier unten ergänzt.
 Bestehende Abschnitte oben werden nicht still umgeschrieben.
+
+### 10.1 TOP-Regelwerk v1 – Ebene 1: Grundmodell
+
+#### 10.1.1 Einheitliches Modell
+
+Im System gibt es technisch keinen getrennten Datentyp für „Titel“ und „TOP“.
+Beides sind `tops`.
+
+#### 10.1.2 Unterscheidung Titel / TOP
+
+Die Unterscheidung erfolgt über Hierarchie-Felder:
+
+* **Titel**
+
+  * `level = 1`
+  * `parent_top_id = null`
+
+* **TOP / Unterpunkt**
+
+  * `level = 2..4`
+  * `parent_top_id = ID eines übergeordneten tops`
+
+#### 10.1.3 Hierarchie
+
+Titel sind Wurzelelemente.
+TOPs sind untergeordnete Elemente innerhalb dieser Hierarchie.
+
+#### 10.1.4 Maximale Tiefe
+
+Die Hierarchie ist auf **Level 4** begrenzt.
+Tiefere Ebenen sind nicht zulässig.
+
+#### 10.1.5 Anlegen
+
+* Ein neuer Titel wird immer auf Root-Ebene angelegt.
+* Ein neuer TOP wird immer unter dem aktuell ausgewählten Element angelegt.
+
+#### 10.1.6 Grundwerte neuer TOPs
+
+Neue TOPs werden mit folgenden Standardwerten angelegt:
+
+* `status = "offen"`
+* `dueDate = null`
+* `longtext = null`
+* `isCarriedOver = false`
+
+#### 10.1.7 Fortlaufende Existenz
+
+TOPs sind nicht nur Elemente einer einzelnen Besprechung, sondern Teil eines fortlaufenden fachlichen Modells.
+Sie können über Besprechungen hinweg weitergeführt werden.
+
+#### 10.1.8 Besprechungsbezug
+
+Die Sichtbarkeit und Bearbeitung eines TOPs hängt vom jeweiligen Meeting-Kontext ab.
+Ein TOP existiert also fachlich übergreifend, wird aber pro Besprechung unterschiedlich dargestellt und behandelt.
