@@ -271,6 +271,7 @@ export default function MeetingDetailPage() {
     id: meetingId,
     number: `#${meetingId}`,
     date: new Date().toISOString().slice(0, 10),
+    keyword: '',
     isClosed: false,
   });
   const [participants, setParticipants] = useState([]);
@@ -440,6 +441,13 @@ export default function MeetingDetailPage() {
               value={meeting.date}
               disabled={isMeetingClosed}
               onChange={(event) => handleMeetingChange('date', event.target.value)}
+            />
+          </label>
+          <label className="field">
+            <span>Schlagwort</span>
+            <input
+              value={meeting.keyword}
+              onChange={(event) => handleMeetingChange('keyword', event.target.value)}
             />
           </label>
         </div>
