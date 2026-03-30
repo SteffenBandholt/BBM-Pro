@@ -3,6 +3,7 @@ export default function MeetingListItem({ meeting, onClick }) {
     <button type="button" className="project-card" onClick={onClick}>
       <span className="project-card__name">{meeting.title}</span>
       <span className="project-card__meta">{meeting.date}</span>
+      <span className="project-card__meta">{meeting.keyword || 'Kein Schlagwort'}</span>
     </button>
   );
 }

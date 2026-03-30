@@ -4,6 +4,7 @@ let meetingsStore = [
     projectId: 1,
     title: 'Baubesprechung 1',
     date: '2025-03-01',
+    keyword: 'Kickoff',
   },
 ];
 
@@ -17,6 +18,7 @@ export async function createMeeting(projectId, input) {
     projectId: Number(projectId),
     title: input.title,
     date: input.date,
+    keyword: input.keyword ?? '',
   };
 
   meetingsStore = [newMeeting, ...meetingsStore];
