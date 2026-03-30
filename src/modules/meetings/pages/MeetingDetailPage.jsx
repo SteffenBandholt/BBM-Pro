@@ -267,7 +267,7 @@ function MeetingTopTree({
 
 export default function MeetingDetailPage() {
   const { meetingId } = useParams();
-  const [isMeetingClosed, setIsMeetingClosed] = useState(false);
+  const [meeting, setMeeting] = useState({ isClosed: false });
   const [participants, setParticipants] = useState([]);
   const [tops, setTops] = useState(() => createInitialMeetingTops());
   const [newTopParentId, setNewTopParentId] = useState(null);
@@ -275,6 +275,7 @@ export default function MeetingDetailPage() {
   const [editingTopId, setEditingTopId] = useState(null);
   const [editingDraft, setEditingDraft] = useState(null);
   const [moveTargetByTopId, setMoveTargetByTopId] = useState({});
+  const isMeetingClosed = meeting.isClosed;
 
   const availableParticipants = [
     { id: 1, name: 'Max Müller', firmName: 'Bauunternehmen Müller' },
@@ -425,7 +426,7 @@ export default function MeetingDetailPage() {
         <button
           type="button"
           className="button button--secondary"
-          onClick={() => setIsMeetingClosed((current) => !current)}
+          onClick={() => setMeeting((current) => ({ ...current, isClosed: !current.isClosed }))}
         >
           {isMeetingClosed ? 'Besprechung öffnen' : 'Besprechung schließen'}
         </button>
