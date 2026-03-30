@@ -269,7 +269,7 @@ export default function MeetingDetailPage() {
   const { meetingId } = useParams();
   const [meeting, setMeeting] = useState({
     id: meetingId,
-    title: `Besprechung ${meetingId}`,
+    number: `#${meetingId}`,
     date: new Date().toISOString().slice(0, 10),
     isClosed: false,
   });
@@ -420,13 +420,28 @@ export default function MeetingDetailPage() {
     }));
   };
 
+  const handleMeetingChange = (field, value) => {
+    setMeeting((currentMeeting) => ({
+      ...currentMeeting,
+      [field]: value,
+    }));
+  };
+
   return (
     <section className="page-section">
       <div className="meeting-detail__header">
         <div>
           <h1>Besprechung</h1>
-          <p className="meeting-detail__meta">Meeting-Titel: {meeting.title}</p>
-          <p className="meeting-detail__meta">Datum: {meeting.date}</p>
+          <p className="meeting-detail__meta">Protokollnummer: {meeting.number}</p>
+          <label className="field">
+            <span>Datum</span>
+            <input
+              type="date"
+              value={meeting.date}
+              disabled={isMeetingClosed}
+              onChange={(event) => handleMeetingChange('date', event.target.value)}
+            />
+          </label>
         </div>
         <button
           type="button"
