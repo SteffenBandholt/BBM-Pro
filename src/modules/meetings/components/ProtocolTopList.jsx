@@ -1,11 +1,28 @@
 import { useState } from 'react';
 
+function formatCreatedAt(createdAt) {
+  if (!createdAt) return '';
+
+  const date = new Date(createdAt);
+  if (Number.isNaN(date.getTime())) {
+    return createdAt;
+  }
+
+  return new Intl.DateTimeFormat('de-DE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: '2-digit',
+  }).format(date);
+}
+
 function ProtocolTopRow({ top, selectedTopId, onSelectTop, collapsedTopIds, onToggleCollapse }) {
   const isSelected = selectedTopId === top.id;
   const isCollapsed = collapsedTopIds.has(top.id);
   const isTitle = top.level === 1;
   const hasChildren = Boolean(top.children?.length);
   const showChildren = hasChildren && (!isTitle || !isCollapsed);
+  const showCreatedAt = !isTitle && Boolean(top.createdAt);
+  const createdAtLabel = showCreatedAt ? formatCreatedAt(top.createdAt) : '';
 
   return (
     <li>
@@ -30,8 +47,14 @@ function ProtocolTopRow({ top, selectedTopId, onSelectTop, collapsedTopIds, onTo
             className={isSelected ? 'protocol-top-row protocol-top-row--selected' : 'protocol-top-row'}
             onClick={() => onSelectTop(top.id)}
           >
-            <span className="protocol-top-row__number">{top.displayNumber}</span>
-            <span className="protocol-top-row__title">{top.title}</span>
+            <span className="protocol-top-row__number-block">
+              <span className="protocol-top-row__number">{top.displayNumber}</span>
+              {showCreatedAt ? <span className="protocol-top-row__created-at">{createdAtLabel}</span> : null}
+            </span>
+            <span className="protocol-top-row__title-block">
+              <span className="protocol-top-row__title">{top.title}</span>
+              {!isTitle && top.longtext ? <span className="protocol-top-row__text">{top.longtext}</span> : null}
+            </span>
             <span className="protocol-top-row__meta-column">
               <span className="protocol-top-row__meta">{top.dueDate || 'ohne Termin'}</span>
               <span className="protocol-top-row__meta">{top.status}</span>
@@ -39,7 +62,6 @@ function ProtocolTopRow({ top, selectedTopId, onSelectTop, collapsedTopIds, onTo
             </span>
           </button>
         </div>
-        {top.longtext ? <p className="protocol-top-row__text">{top.longtext}</p> : null}
       </div>
       {showChildren ? (
         <ul className="protocol-top-children">

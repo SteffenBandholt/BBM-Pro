@@ -1098,6 +1098,24 @@ a {
   font-size: 0.75rem;
 }
 
+.protocol-top-row__number-block {
+  display: grid;
+  align-content: start;
+  gap: 0.04rem;
+}
+
+.protocol-top-row__created-at {
+  color: #6f7d90;
+  font-size: 0.5em;
+  line-height: 1.05;
+}
+
+.protocol-top-row__title-block {
+  display: grid;
+  align-content: start;
+  gap: 0.04rem;
+}
+
 .protocol-top-row__title {
   font-weight: 700;
   font-size: 0.8rem;
@@ -1118,8 +1136,9 @@ a {
 }
 
 .protocol-top-row__text {
-  margin: 0 0 0.04rem 58px;
-  padding: 0 0.15rem 0.08rem;
+  margin: 0;
+  padding: 0;
+  line-height: 1.25;
 }
 
 .protocol-top-children {

@@ -1,5 +1,6 @@
 ﻿const TOP_STATUS_OPTIONS = ['neu', 'übernommen', 'geändert', 'erledigt', 'hidden', 'trashed'];
 const TOP_STATUS_VALUES = new Set(TOP_STATUS_OPTIONS);
+const DEFAULT_CREATED_AT = new Date().toISOString().slice(0, 10);
 
 const initialMeetingTops = [
   {
@@ -7,6 +8,7 @@ const initialMeetingTops = [
     title: 'Projektstart',
     longtext: 'Kickoff und erste Abstimmungen.',
     dueDate: null,
+    createdAt: DEFAULT_CREATED_AT,
     ampel: 'gelb',
     responsible: '',
     status: 'neu',
@@ -24,6 +26,7 @@ const initialMeetingTops = [
     title: 'Übernommene Punkte',
     longtext: 'Aus der vorherigen Besprechung übernommen.',
     dueDate: null,
+    createdAt: DEFAULT_CREATED_AT,
     ampel: 'gelb',
     responsible: '',
     status: 'übernommen',
@@ -41,6 +44,7 @@ const initialMeetingTops = [
     title: 'Zufahrt klären',
     longtext: 'Abstimmung mit der Bauleitung.',
     dueDate: null,
+    createdAt: DEFAULT_CREATED_AT,
     ampel: 'gelb',
     responsible: '',
     status: 'geändert',
@@ -58,6 +62,7 @@ const initialMeetingTops = [
     title: 'Terminplanung',
     longtext: 'Folgetermin mit allen Beteiligten abstimmen.',
     dueDate: null,
+    createdAt: DEFAULT_CREATED_AT,
     ampel: 'gelb',
     responsible: '',
     status: 'neu',
@@ -75,6 +80,7 @@ const initialMeetingTops = [
     title: 'Folgetermin festlegen',
     longtext: 'Termin für die nächste Runde definieren.',
     dueDate: null,
+    createdAt: DEFAULT_CREATED_AT,
     ampel: 'gelb',
     responsible: '',
     status: 'neu',
@@ -92,6 +98,7 @@ const initialMeetingTops = [
     title: 'Teilnehmerliste prüfen',
     longtext: 'Aktive Beteiligte bestätigen.',
     dueDate: null,
+    createdAt: DEFAULT_CREATED_AT,
     ampel: 'gelb',
     responsible: '',
     status: 'neu',
@@ -128,6 +135,7 @@ function normalizeTop(top) {
     title: top.title ?? '',
     longtext: top.longtext ?? '',
     dueDate: top.dueDate ?? null,
+    createdAt: top.createdAt ?? DEFAULT_CREATED_AT,
     ampel: top.ampel ?? 'gelb',
     responsible: top.responsible ?? '',
     status: lifecycleStatus,
@@ -240,6 +248,7 @@ export function createEmptyTopDraft() {
     title: '',
     longtext: '',
     dueDate: '',
+    createdAt: DEFAULT_CREATED_AT,
     ampel: 'gelb',
     responsible: '',
     status: 'neu',
@@ -323,6 +332,7 @@ export function addMeetingTop(tops, draft) {
     title: draft.title?.trim() ?? '',
     longtext: draft.longtext?.trim() ?? '',
     dueDate: draft.dueDate || null,
+    createdAt: draft.createdAt || DEFAULT_CREATED_AT,
     ampel: draft.ampel ?? 'gelb',
     responsible: draft.responsible?.trim() ?? '',
     status: draft.isHidden
