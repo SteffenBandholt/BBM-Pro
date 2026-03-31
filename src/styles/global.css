@@ -1156,6 +1156,32 @@ a {
   font-size: 0.72rem;
 }
 
+.protocol-top-row__meta--due {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.18rem;
+}
+
+.protocol-top-row__traffic-light {
+  width: 0.42rem;
+  height: 0.42rem;
+  border-radius: 999px;
+  background: #cbd5e1;
+  flex: 0 0 auto;
+}
+
+.protocol-top-row__traffic-light--green {
+  background: #2e9b57;
+}
+
+.protocol-top-row__traffic-light--yellow {
+  background: #d8a200;
+}
+
+.protocol-top-row__traffic-light--red {
+  background: #d64545;
+}
+
 .protocol-top-row__text {
   margin: 0;
   padding: 0;

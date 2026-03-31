@@ -23,6 +23,14 @@ function ProtocolTopRow({ top, selectedTopId, onSelectTop, collapsedTopIds, onTo
   const showChildren = hasChildren && (!isTitle || !isCollapsed);
   const showCreatedAt = !isTitle && Boolean(top.createdAt);
   const createdAtLabel = showCreatedAt ? formatCreatedAt(top.createdAt) : '';
+  const trafficLightClass =
+    top.ampel === 'grün'
+      ? 'protocol-top-row__traffic-light protocol-top-row__traffic-light--green'
+      : top.ampel === 'rot'
+        ? 'protocol-top-row__traffic-light protocol-top-row__traffic-light--red'
+        : top.ampel === 'gelb'
+          ? 'protocol-top-row__traffic-light protocol-top-row__traffic-light--yellow'
+          : 'protocol-top-row__traffic-light';
 
   return (
     <li>
@@ -56,7 +64,10 @@ function ProtocolTopRow({ top, selectedTopId, onSelectTop, collapsedTopIds, onTo
               {!isTitle && top.longtext ? <span className="protocol-top-row__text">{top.longtext}</span> : null}
             </span>
             <span className="protocol-top-row__meta-column">
-              <span className="protocol-top-row__meta">{top.dueDate || 'ohne Termin'}</span>
+              <span className="protocol-top-row__meta protocol-top-row__meta--due">
+                <span>{top.dueDate || 'ohne Termin'}</span>
+                <span className={trafficLightClass} aria-hidden="true" />
+              </span>
               <span className="protocol-top-row__meta">{top.status}</span>
               <span className="protocol-top-row__meta">{top.responsible || 'offen'}</span>
             </span>
