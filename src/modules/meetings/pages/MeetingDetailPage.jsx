@@ -16,13 +16,21 @@ import ProtocolBottomToolBar from '../components/ProtocolBottomToolBar.jsx';
 import ProtocolEditorPanel from '../components/ProtocolEditorPanel.jsx';
 import ProtocolTopList from '../components/ProtocolTopList.jsx';
 
+function formatProtocolDate(date) {
+  return new Intl.DateTimeFormat('de-DE', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(date);
+}
+
 export default function MeetingDetailPage() {
   const { meetingId } = useParams();
   const navigate = useNavigate();
+  const protocolDate = formatProtocolDate(new Date());
   const [meeting, setMeeting] = useState({
     id: meetingId,
     isClosed: false,
-    viewMode: 'Protokoll',
   });
   const [tops, setTops] = useState(() => createInitialMeetingTops());
   const [selectedTopId, setSelectedTopId] = useState(null);
@@ -39,6 +47,7 @@ export default function MeetingDetailPage() {
     : editorMode === 'create-child'
       ? 'Neuen Unterpunkt bearbeiten'
       : 'TOP bearbeiten';
+  const protocolLabel = `#${meetingId} - ${protocolDate}`;
 
   const startEditTop = (top) => {
     setSelectedTopId(top.id);
@@ -143,13 +152,6 @@ export default function MeetingDetailPage() {
     }
   };
 
-  const handleViewToggle = () => {
-    setMeeting((current) => ({
-      ...current,
-      viewMode: current.viewMode === 'Protokoll' ? 'Bearbeitung' : 'Protokoll',
-    }));
-  };
-
   const handleEndProtocol = () => {
     setMeeting((current) => ({ ...current, isClosed: true }));
   };
@@ -159,7 +161,12 @@ export default function MeetingDetailPage() {
   return (
     <section className="page-section protocol-page">
       <div className="protocol-paper">
-        <ProtocolActionBar onToggleView={handleViewToggle} onEndProtocol={handleEndProtocol} onClose={handleClose} />
+        <ProtocolActionBar
+          protocolLabel={protocolLabel}
+          isClosed={meeting.isClosed}
+          onEndProtocol={handleEndProtocol}
+          onClose={handleClose}
+        />
 
         <div className="protocol-layout">
           <div className="protocol-main">
