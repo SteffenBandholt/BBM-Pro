@@ -971,14 +971,14 @@ a {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 0.9rem 0.75rem 1.1rem;
+  padding: clamp(0.45rem, 1.1vw, 0.9rem) clamp(0.35rem, 1vw, 0.75rem) clamp(0.5rem, 1.2vw, 1.1rem);
   min-height: calc(100vh - 4.2rem);
   font-size: 0.86rem;
   background: #e9eef5;
 }
 
 .protocol-paper {
-  width: min(100%, 210mm);
+  width: clamp(180mm, 92vw, 210mm);
   min-height: calc(100vh - 6rem);
   background: #ffffff;
   border: 1px solid #d9e2ee;
@@ -1207,7 +1207,7 @@ a {
   grid-template-columns: 4.1rem minmax(0, 1fr);
   align-items: center;
   column-gap: 0.45rem;
-  width: min(100%, 140mm);
+  width: clamp(132mm, 78vw, 140mm);
   max-width: 140mm;
 }
 
@@ -1237,7 +1237,7 @@ a {
   align-items: start;
   column-gap: 0.45rem;
   margin-top: 0.02rem;
-  width: min(100%, 140mm);
+  width: clamp(132mm, 78vw, 140mm);
   max-width: 140mm;
 }
 
@@ -1265,10 +1265,23 @@ a {
 
 @media (max-width: 1180px) {
   .protocol-paper {
-    width: 100%;
+    width: clamp(170mm, 96vw, 200mm);
     border-radius: 0.7rem;
-    padding-left: 1.2rem;
-    padding-right: 0.9rem;
+  }
+}
+
+@media (max-width: 920px) {
+  .protocol-page {
+    padding-inline: 0.25rem;
+  }
+
+  .protocol-paper {
+    width: min(100%, 188mm);
+  }
+
+  .protocol-editor-title-row__title,
+  .protocol-editor-longtext {
+    width: min(100%, 132mm);
   }
 }
 
