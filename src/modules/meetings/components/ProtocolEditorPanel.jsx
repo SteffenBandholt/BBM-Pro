@@ -31,17 +31,13 @@ export default function ProtocolEditorPanel({
               <span>Titel</span>
               <input value={draft.title} onChange={(event) => onFieldChange('title', event.target.value)} />
             </label>
-            <label className="protocol-editor-title-row__flag protocol-editor-title-row__flag--inline">
-              <input type="checkbox" checked={draft.isImportant} onChange={(event) => onToggleImportant(event.target.checked)} />
-              <span>wichtig</span>
-            </label>
           </div>
 
           {isTitleLevel ? null : (
-            <div className="protocol-editor-longtext">
-              <span className="protocol-editor-longtext__label">Langtext</span>
+            <label className="field protocol-editor-longtext">
+              <span>Langtext</span>
               <textarea rows={2} value={draft.longtext} onChange={(event) => onFieldChange('longtext', event.target.value)} />
-            </div>
+            </label>
           )}
         </div>
 
