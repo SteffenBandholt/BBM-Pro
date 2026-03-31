@@ -1042,6 +1042,32 @@ a {
   gap: 0.03rem;
 }
 
+.protocol-top-row-shell {
+  display: grid;
+  grid-template-columns: 1rem minmax(0, 1fr);
+  gap: 0.08rem;
+  align-items: stretch;
+}
+
+.protocol-top-row-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  min-height: 100%;
+  border: 0;
+  background: transparent;
+  color: #5a6a80;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  line-height: 1;
+}
+
+.protocol-top-row-toggle--spacer {
+  cursor: default;
+}
+
 .protocol-top-row {
   width: 100%;
   display: grid;
