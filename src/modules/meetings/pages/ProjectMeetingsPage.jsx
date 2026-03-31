@@ -27,18 +27,19 @@ export default function ProjectMeetingsPage() {
 
   return (
     <section className="page-section">
-      <div className="page-header">
+      <div className="meeting-list-hero">
         <div>
+          <p className="meeting-list-hero__eyebrow">Besprechungen im Projekt</p>
           <h1>Besprechungen</h1>
-          <p>Projektbezogene Besprechungen</p>
+          <p>Hier öffnest du laufende Protokolle oder legst schnell eine neue Besprechung an.</p>
         </div>
-        <button type="button" className="button" onClick={() => setIsCreating(true)}>
+        <button type="button" className="button meeting-list-hero__cta" onClick={() => setIsCreating(true)}>
           Neue Besprechung
         </button>
       </div>
 
       {isCreating ? (
-        <section className="project-form">
+        <section className="meeting-list-create">
           <label className="field">
             <span>Titel</span>
             <input value={title} onChange={(event) => setTitle(event.target.value)} />

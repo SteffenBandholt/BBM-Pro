@@ -32,12 +32,13 @@ export default function ProjectsPage() {
 
   return (
     <section className="page-section">
-      <div className="projects-header">
+      <div className="projects-hero">
         <div>
+          <p className="projects-hero__eyebrow">Projekte als Einstieg in Besprechungen</p>
           <h1>Projekte</h1>
-          <p>Arbeitsbereich für Projektübersicht, Anlage und Detailnavigation.</p>
+          <p>Wähle ein Projekt und springe direkt zur nächsten Besprechung oder zum Protokoll.</p>
         </div>
-        <button type="button" className="button" onClick={handleCreateClick}>
+        <button type="button" className="button projects-hero__cta" onClick={handleCreateClick}>
           Neues Projekt
         </button>
       </div>
@@ -45,12 +46,8 @@ export default function ProjectsPage() {
       {loading ? <p>Lade Projekte ...</p> : null}
       {error ? <p className="form-error">{error}</p> : null}
 
-      {isCreating ? (
-        <ProjectForm onSubmit={handleSubmitCreate} onCancel={handleCancelCreate} submitLabel="Projekt speichern" />
-      ) : null}
-      {!loading && !error ? (
-        <ProjectList projects={projects} onProjectClick={handleProjectClick} />
-      ) : null}
+      {isCreating ? <ProjectForm onSubmit={handleSubmitCreate} onCancel={handleCancelCreate} submitLabel="Projekt speichern" /> : null}
+      {!loading && !error ? <ProjectList projects={projects} onProjectClick={handleProjectClick} /> : null}
     </section>
   );
 }
