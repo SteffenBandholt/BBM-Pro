@@ -9,36 +9,38 @@ function ProtocolTopRow({ top, selectedTopId, onSelectTop, collapsedTopIds, onTo
 
   return (
     <li>
-      <div className="protocol-top-row-shell">
-        {isTitle ? (
+      <div className="protocol-top-entry">
+        <div className="protocol-top-row-shell">
+          {isTitle ? (
+            <button
+              type="button"
+              className="protocol-top-row-toggle"
+              onClick={() => onToggleCollapse(top.id)}
+              aria-expanded={!isCollapsed}
+              aria-label={isCollapsed ? `Familie von ${top.displayNumber} aufklappen` : `Familie von ${top.displayNumber} zuklappen`}
+            >
+              <span aria-hidden="true">{isCollapsed ? '▸' : '▾'}</span>
+            </button>
+          ) : (
+            <span className="protocol-top-row-toggle protocol-top-row-toggle--spacer" aria-hidden="true" />
+          )}
+
           <button
             type="button"
-            className="protocol-top-row-toggle"
-            onClick={() => onToggleCollapse(top.id)}
-            aria-expanded={!isCollapsed}
-            aria-label={isCollapsed ? `Familie von ${top.displayNumber} aufklappen` : `Familie von ${top.displayNumber} zuklappen`}
+            className={isSelected ? 'protocol-top-row protocol-top-row--selected' : 'protocol-top-row'}
+            onClick={() => onSelectTop(top.id)}
           >
-            <span aria-hidden="true">{isCollapsed ? '▸' : '▾'}</span>
+            <span className="protocol-top-row__number">{top.displayNumber}</span>
+            <span className="protocol-top-row__title">{top.title}</span>
+            <span className="protocol-top-row__meta-column">
+              <span className="protocol-top-row__meta">{top.dueDate || 'ohne Termin'}</span>
+              <span className="protocol-top-row__meta">{top.status}</span>
+              <span className="protocol-top-row__meta">{top.responsible || 'offen'}</span>
+            </span>
           </button>
-        ) : (
-          <span className="protocol-top-row-toggle protocol-top-row-toggle--spacer" aria-hidden="true" />
-        )}
-
-        <button
-          type="button"
-          className={isSelected ? 'protocol-top-row protocol-top-row--selected' : 'protocol-top-row'}
-          onClick={() => onSelectTop(top.id)}
-        >
-          <span className="protocol-top-row__number">{top.displayNumber}</span>
-          <span className="protocol-top-row__title">{top.title}</span>
-          <span className="protocol-top-row__meta-column">
-            <span className="protocol-top-row__meta">{top.dueDate || 'ohne Termin'}</span>
-            <span className="protocol-top-row__meta">{top.status}</span>
-            <span className="protocol-top-row__meta">{top.responsible || 'offen'}</span>
-          </span>
-        </button>
+        </div>
+        {top.longtext ? <p className="protocol-top-row__text">{top.longtext}</p> : null}
       </div>
-      {top.longtext ? <p className="protocol-top-row__text">{top.longtext}</p> : null}
       {showChildren ? (
         <ul className="protocol-top-children">
           {top.children.map((child) => (
