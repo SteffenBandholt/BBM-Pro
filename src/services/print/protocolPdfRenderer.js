@@ -21,9 +21,6 @@ const FONTS = {
   h1: { size: 16 },
 };
 
-function mm(value) {
-  return value * MM;
-
 function renderInfoBlock(state, data) {
   const { page, fonts } = state;
   const blockHeight = 36;
