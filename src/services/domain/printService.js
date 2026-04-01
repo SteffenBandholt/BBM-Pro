@@ -57,6 +57,7 @@ function normalizeTop(row, isClosed, displayMap) {
     isTask: !!row.is_task,
     isDecision: !!row.is_decision,
     isImportant: !!row.is_important,
+    isTouched: !!row.is_touched,
     responsibleKind: row.responsible_kind || null,
     responsibleId: row.responsible_id || null,
     responsibleLabel: row.responsible_label || null,
@@ -124,8 +125,11 @@ function buildTree(nodes) {
   return walk(null);
 }
 
-function filterVisible(rows) {
-  return rows.filter((r) => !r.is_trashed && !r.removed_at && !r.is_hidden);
+function filterVisible(rows, isClosed) {
+  return rows.filter((r) => {
+    const hidden = isClosed && r.frozen_is_hidden != null ? r.frozen_is_hidden : r.is_hidden;
+    return !r.is_trashed && !r.removed_at && !hidden;
+  });
 }
 
 function mapParticipants(meetingId) {
@@ -151,7 +155,7 @@ export function getPrintData({ mode, projectId, meetingId }) {
 
   const isClosed = !!meeting.is_closed;
   const rows = meetingTopsRepo.listJoinedByMeeting(meetingId);
-  const visibleRows = filterVisible(rows);
+  const visibleRows = filterVisible(rows, isClosed);
   const displayMap = buildDisplayNumbers(visibleRows);
   const normalized = visibleRows.map((r) => normalizeTop(r, isClosed, displayMap));
 

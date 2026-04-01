@@ -1,5 +1,7 @@
 import { getPrintData } from "../domain/printService.js";
 import { renderProtocolPdf } from "./protocolPdfRenderer.js";
+import { renderTodoPdf } from "./todoPdfRenderer.js";
+import { renderToplistPdf } from "./toplistPdfRenderer.js";
 import { buildDebugProtocolData } from "./printDebugData.js";
 
 export async function generateProtocolPdf(projectId, meetingId) {
@@ -11,4 +13,16 @@ export async function generateProtocolPdf(projectId, meetingId) {
 export async function generateDebugProtocolPdf() {
   const data = buildDebugProtocolData();
   return renderProtocolPdf(data);
+}
+
+export async function generateTodoPdf(projectId, meetingId) {
+  const data = getPrintData({ mode: "todo", projectId, meetingId });
+  const pdfBytes = await renderTodoPdf(data);
+  return pdfBytes;
+}
+
+export async function generateToplistPdf(projectId, meetingId) {
+  const data = getPrintData({ mode: "toplist", projectId, meetingId });
+  const pdfBytes = await renderToplistPdf(data);
+  return pdfBytes;
 }

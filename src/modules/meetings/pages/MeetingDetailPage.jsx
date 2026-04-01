@@ -18,7 +18,7 @@ import {
   listMeetingParticipants,
   setMeetingParticipant,
 } from '../services/meetingParticipantsService.js';
-import { generateProtocolPdf } from '../../../services/print/printController.js';
+import { generateProtocolPdf, generateTodoPdf, generateToplistPdf } from '../../../services/print/printController.js';
 
 function formatProtocolDate(date) {
   return new Intl.DateTimeFormat('de-DE', {
@@ -301,6 +301,44 @@ export default function MeetingDetailPage() {
     void run();
   };
 
+  const handleDownloadTodoPdf = () => {
+    const run = async () => {
+      try {
+        const pdfBytes = await generateTodoPdf(meeting.project_id, meetingId);
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `ToDo-${meetingId}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error(err);
+        alert('ToDo-PDF konnte nicht erzeugt werden.');
+      }
+    };
+    void run();
+  };
+
+  const handleDownloadToplistPdf = () => {
+    const run = async () => {
+      try {
+        const pdfBytes = await generateToplistPdf(meeting.project_id, meetingId);
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Topliste-${meetingId}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error(err);
+        alert('Toplisten-PDF konnte nicht erzeugt werden.');
+      }
+    };
+    void run();
+  };
+
   return (
     <section className="page-section protocol-page">
       <div className="protocol-paper">
@@ -374,6 +412,12 @@ export default function MeetingDetailPage() {
             <div className="protocol-print-actions">
               <button type="button" className="button button--secondary button--sm" onClick={handleDownloadPdf}>
                 PDF erzeugen
+              </button>
+              <button type="button" className="button button--secondary button--sm" onClick={handleDownloadTodoPdf}>
+                ToDo-PDF
+              </button>
+              <button type="button" className="button button--secondary button--sm" onClick={handleDownloadToplistPdf}>
+                Topliste-PDF
               </button>
             </div>
           </div>
