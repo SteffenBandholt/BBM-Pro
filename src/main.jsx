@@ -1,16 +1,17 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter, HashRouter } from 'react-router-dom';
 import App from './app/App.jsx';
 import { isElectronRuntime } from './app/runtime/isElectron.js';
 import './styles/global.css';
 
 document.documentElement.dataset.runtime = isElectronRuntime() ? 'electron' : 'web';
+const Router = isElectronRuntime() ? HashRouter : BrowserRouter;
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <BrowserRouter>
+    <Router>
       <App />
-    </BrowserRouter>
+    </Router>
   </React.StrictMode>,
 );
