@@ -1,12 +1,9 @@
-import {
-  createMeeting as createMeetingDataSource,
-  listMeetings as listMeetingsDataSource,
-} from '../data/fakeMeetingsDataSource.js';
+import * as localMeetingsDataSource from './localMeetingsDataSource.js';
 
 export async function listMeetings(projectId) {
-  return listMeetingsDataSource(projectId);
+  return localMeetingsDataSource.listMeetings(projectId);
 }
 
 export async function createMeeting(projectId, input) {
-  return createMeetingDataSource(projectId, input);
+  return localMeetingsDataSource.createMeeting(projectId, input);
 }

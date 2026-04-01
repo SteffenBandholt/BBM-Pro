@@ -1,4 +1,15 @@
-﻿const TOP_STATUS_OPTIONS = ['neu', 'übernommen', 'geändert', 'erledigt', 'hidden', 'trashed'];
+const TOP_STATUS_OPTIONS = [
+  'neu',
+  'übernommen',
+  'geändert',
+  'erledigt',
+  'hidden',
+  'trashed',
+  'offen',
+  'in arbeit',
+  'blockiert',
+  'verzug',
+];
 const TOP_STATUS_VALUES = new Set(TOP_STATUS_OPTIONS);
 const DEFAULT_CREATED_AT = new Date().toISOString().slice(0, 10);
 
@@ -528,4 +539,3 @@ export function getMeetingTopMoveTargetOptions(tops, topId) {
 }
 
 export { TOP_STATUS_OPTIONS };
-
