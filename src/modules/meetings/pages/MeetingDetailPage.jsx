@@ -13,6 +13,11 @@ import ProtocolBottomToolBar from '../components/ProtocolBottomToolBar.jsx';
 import ProtocolEditorPanel from '../components/ProtocolEditorPanel.jsx';
 import ProtocolTopList from '../components/ProtocolTopList.jsx';
 import { closeMeeting as closeMeetingService } from '../services/meetingCloseService.js';
+import { listProjectFirms } from '../services/projectFirmsService.js';
+import {
+  listMeetingParticipants,
+  setMeetingParticipant,
+} from '../services/meetingParticipantsService.js';
 
 function formatProtocolDate(date) {
   return new Intl.DateTimeFormat('de-DE', {
@@ -31,6 +36,7 @@ function mapRowToUi(row) {
     createdAt: row.top_created_at || '',
     ampel: row.status === 'erledigt' ? 'grün' : 'gelb',
     responsible: row.responsible_label || '',
+    responsibleId: row.responsible_id || null,
     status: row.status || 'offen',
     isCarriedOver: !!row.is_carried_over,
     isHidden: !!row.is_hidden,
@@ -50,6 +56,8 @@ export default function MeetingDetailPage() {
   const protocolDate = formatProtocolDate(new Date());
   const [meeting, setMeeting] = useState({ id: meetingId, isClosed: false, project_id: null });
   const [tops, setTops] = useState([]);
+  const [firms, setFirms] = useState([]);
+  const [participants, setParticipants] = useState([]);
   const [selectedTopId, setSelectedTopId] = useState(null);
   const [editorMode, setEditorMode] = useState('edit');
   const [editorDraft, setEditorDraft] = useState({
@@ -59,15 +67,25 @@ export default function MeetingDetailPage() {
     ampel: 'gelb',
     status: 'offen',
     responsible: '',
+    responsibleId: '',
     isImportant: false,
     level: 1,
   });
+
+  const loadFirmsAndParticipants = async (projectId) => {
+    if (!projectId) return;
+    const firmRows = await listProjectFirms(projectId);
+    setFirms(firmRows);
+    const parts = await listMeetingParticipants(meetingId);
+    setParticipants(parts);
+  };
 
   useEffect(() => {
     const load = async () => {
       const m = await getMeeting(meetingId);
       if (m) {
         setMeeting({ id: m.id, isClosed: !!m.is_closed, project_id: m.project_id });
+        await loadFirmsAndParticipants(m.project_id);
       }
       const rows = await listMeetingTops(meetingId);
       setTops(rows.map(mapRowToUi));
@@ -99,6 +117,7 @@ export default function MeetingDetailPage() {
       ampel: top.status === 'erledigt' ? 'grün' : top.isImportant ? 'rot' : 'gelb',
       status: top.status || 'offen',
       responsible: top.responsible || '',
+      responsibleId: top.responsibleId || '',
       isImportant: Boolean(top.isImportant),
     });
   };
@@ -113,6 +132,7 @@ export default function MeetingDetailPage() {
       ampel: 'gelb',
       status: 'offen',
       responsible: '',
+      responsibleId: '',
       isImportant: false,
       level: 1,
     });
@@ -128,6 +148,7 @@ export default function MeetingDetailPage() {
       ampel: 'gelb',
       status: 'offen',
       responsible: '',
+      responsibleId: '',
       isImportant: false,
       level: selectedTop.level + 1,
       parentTopId: selectedTop.id ?? null,
@@ -154,7 +175,8 @@ export default function MeetingDetailPage() {
             longtext: editorDraft.longtext,
             dueDate: editorDraft.dueDate,
             status: editorDraft.status,
-            responsible_label: editorDraft.responsible,
+            responsible_kind: editorDraft.responsibleId ? 'firm' : null,
+            responsible_id: editorDraft.responsibleId || null,
             is_important: editorDraft.isImportant,
           },
         });
@@ -188,6 +210,7 @@ export default function MeetingDetailPage() {
       ampel: 'gelb',
       status: 'offen',
       responsible: '',
+      responsibleId: '',
       isImportant: false,
       level: 1,
     });
@@ -221,6 +244,7 @@ export default function MeetingDetailPage() {
         ampel: top.status === 'erledigt' ? 'grün' : top.isImportant ? 'rot' : 'gelb',
         status: top.status || 'offen',
         responsible: top.responsible || '',
+        responsibleId: top.responsibleId || '',
         isImportant: Boolean(top.isImportant),
       });
     }
@@ -246,6 +270,17 @@ export default function MeetingDetailPage() {
 
   const handleClose = () => navigate(-1);
 
+  const handleToggleParticipant = async (firmId, field, value) => {
+    const current = participants.find((p) => String(p.firm_id) === String(firmId));
+    await setMeetingParticipant({
+      meetingId,
+      firmId,
+      is_present: field === 'is_present' ? value : current?.is_present || 0,
+      is_in_distribution: field === 'is_in_distribution' ? value : current?.is_in_distribution || 0,
+    });
+    setParticipants(await listMeetingParticipants(meetingId));
+  };
+
   return (
     <section className="page-section protocol-page">
       <div className="protocol-paper">
@@ -259,12 +294,49 @@ export default function MeetingDetailPage() {
         <div className="protocol-layout">
           <div className="protocol-main">
             <ProtocolTopList tops={topTree} selectedTopId={selectedTopId} onSelectTop={handleTopSelect} />
+
+            <div className="protocol-participants">
+              <h3>Teilnehmer (Firmen)</h3>
+              {firms.length === 0 ? (
+                <p>Keine Firmen vorhanden.</p>
+              ) : (
+                <ul>
+                  {firms.map((f) => {
+                    const entry = participants.find((p) => String(p.firm_id) === String(f.id));
+                    const present = entry ? !!entry.is_present : false;
+                    const dist = entry ? !!entry.is_in_distribution : false;
+                    return (
+                      <li key={f.id} className="participant-row">
+                        <span>{f.name}</span>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={present}
+                            onChange={(e) => handleToggleParticipant(f.id, 'is_present', e.target.checked)}
+                          />
+                          anwesend
+                        </label>
+                        <label>
+                          <input
+                            type="checkbox"
+                            checked={dist}
+                            onChange={(e) => handleToggleParticipant(f.id, 'is_in_distribution', e.target.checked)}
+                          />
+                          Verteiler
+                        </label>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </div>
           </div>
 
           <div className="protocol-bottom-area">
             <ProtocolEditorPanel
               title={topLabel}
               draft={editorDraft}
+              responsibleOptions={firms}
               onFieldChange={handleEditorFieldChange}
               onSave={handleSaveEditor}
               onDelete={handleDeleteSelectedTop}

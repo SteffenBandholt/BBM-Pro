@@ -2,6 +2,7 @@ import * as topsRepo from "../repositories/topsRepo.js";
 import * as meetingTopsRepo from "../repositories/meetingTopsRepo.js";
 import * as meetingsRepo from "../repositories/meetingsRepo.js";
 import { todayYmd } from "../utils/time.js";
+import * as projectFirmsRepo from "../repositories/projectFirmsRepo.js";
 
 const MAX_LEVEL = 4;
 
@@ -123,6 +124,26 @@ export function updateMeetingFields({ meetingId, topId, patch }) {
     topsRepo.setHidden({ topId, isHidden: !!next.is_hidden });
   }
 
+  // Validate responsible firm
+  if (patch.responsible_kind !== undefined || patch.responsible_id !== undefined || patch.responsible_label !== undefined) {
+    const kind = patch.responsible_kind ?? patch.responsibleKind ?? mt.responsible_kind ?? null;
+    const responsibleId = patch.responsible_id ?? patch.responsibleId ?? mt.responsible_id ?? null;
+    if (kind === null) {
+      next.responsible_kind = null;
+      next.responsible_id = null;
+      next.responsible_label = null;
+    } else if (kind === "firm") {
+      if (!responsibleId) throw new Error("Verantwortliche Firma fehlt");
+      const firm = projectFirmsRepo.getById(responsibleId);
+      if (!firm) throw new Error("Verantwortliche Firma existiert nicht");
+      next.responsible_kind = "firm";
+      next.responsible_id = firm.id;
+      next.responsible_label = firm.name;
+    } else {
+      throw new Error("Verantwortlichkeitsart nicht erlaubt (nur firm)");
+    }
+  }
+
   return meetingTopsRepo.updateMeetingTop({
     meetingId,
     topId,
@@ -134,9 +155,9 @@ export function updateMeetingFields({ meetingId, topId, patch }) {
     is_touched: next.is_touched,
     is_task: patch.is_task,
     is_decision: patch.is_decision,
-    responsible_kind: patch.responsible_kind,
-    responsible_id: patch.responsible_id,
-    responsible_label: patch.responsible_label,
+    responsible_kind: next.responsible_kind ?? mt.responsible_kind,
+    responsible_id: next.responsible_id ?? mt.responsible_id,
+    responsible_label: next.responsible_label ?? mt.responsible_label,
     contact_kind: patch.contact_kind,
     contact_person_id: patch.contact_person_id,
     contact_label: patch.contact_label,

@@ -9,6 +9,9 @@ function defaultDb() {
     meetings: [],
     tops: [],
     meetingTops: [],
+    projectFirms: [],
+    projectPersons: [],
+    meetingParticipants: [],
   };
 }
 

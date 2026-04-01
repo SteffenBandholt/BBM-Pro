@@ -2,6 +2,8 @@ import * as meetingsRepo from "../repositories/meetingsRepo.js";
 import * as meetingTopsRepo from "../repositories/meetingTopsRepo.js";
 import * as topsRepo from "../repositories/topsRepo.js";
 import { todayYmd } from "../utils/time.js";
+import * as participantService from "./participantService.js";
+import * as projectFirmsRepo from "../repositories/projectFirmsRepo.js";
 
 function buildDisplayNumbers(rows) {
   const byId = new Map(rows.map((r) => [String(r.id), r]));
@@ -90,6 +92,10 @@ export function createMeeting({ projectId, title }) {
   if (lastClosed?.id) {
     carryOverFromMeeting(lastClosed.id, meeting.id);
   }
+
+  // Seed participants from project firms
+  projectFirmsRepo.ensureSampleFirms(projectId);
+  participantService.seedParticipantsFromProject(meeting.id, projectId);
 
   return meeting;
 }

@@ -70,12 +70,20 @@ export default function ProtocolEditorPanel({
               </label>
 
               <label className="field protocol-editor-meta__responsible">
-                <span>Verantw.</span>
-                <select value={draft.responsible} onChange={(event) => onFieldChange('responsible', event.target.value)}>
+                <span>Verantw. Firma</span>
+                <select
+                  value={draft.responsibleId || ''}
+                  onChange={(event) => {
+                    const val = event.target.value;
+                    onFieldChange('responsibleId', val);
+                  }}
+                >
                   <option value="">Offen</option>
-                  <option value="max">Max Müller</option>
-                  <option value="anna">Anna Becker</option>
-                  <option value="team">Projektteam</option>
+                  {responsibleOptions.map((f) => (
+                    <option key={f.id} value={f.id}>
+                      {f.name}
+                    </option>
+                  ))}
                 </select>
               </label>
             </div>
