@@ -1,3 +1,5 @@
+import { computeDisplayNumbers } from '../../services/tops/displayNumber.js';
+
 const TOP_STATUS_OPTIONS = [
   'neu',
   'übernommen',
@@ -270,10 +272,11 @@ export function createEmptyTopDraft() {
 
 export function buildMeetingTopTree(tops) {
   const normalizedTops = tops.map(normalizeTop);
+  const displayMap = computeDisplayNumbers(normalizedTops);
   const index = buildTopIndex(normalizedTops);
 
-  const walk = (parentTopId, parentDisplayNumber = '', lineage = new Set()) =>
-    (parentDisplayNumber && parentDisplayNumber.split('.').length >= 4 ? [] : (index.get(parentTopId ?? null) ?? []))
+  const walk = (parentTopId, lineage = new Set()) =>
+    (index.get(parentTopId ?? null) ?? [])
       .slice()
       .sort(compareTopOrder)
       .filter((top) => isTopVisible(top))
@@ -282,14 +285,14 @@ export function buildMeetingTopTree(tops) {
           return null;
         }
 
-        const displayNumber = parentDisplayNumber ? `${parentDisplayNumber}.${top.number}` : `${top.number}`;
+        const displayNumber = displayMap.get(String(top.id)) || `${top.number}`;
         const nextLineage = new Set(lineage);
         nextLineage.add(top.id);
 
         return {
           ...top,
           displayNumber,
-          children: walk(top.id, displayNumber, nextLineage).filter(Boolean),
+          children: walk(top.id, nextLineage).filter(Boolean),
         };
       })
       .filter(Boolean);

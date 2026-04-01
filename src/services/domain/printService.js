@@ -1,4 +1,5 @@
 import { getRepos } from "../repositories/index.js";
+import { computeDisplayNumbers } from "../tops/displayNumber.js";
 
 function computeAmpel(status, dueDate) {
   const s = String(status || "").toLowerCase();
@@ -63,33 +64,7 @@ function normalizeTop(row, isClosed, displayMap) {
 }
 
 function buildDisplayNumbers(rows) {
-  const byId = new Map(rows.map((r) => [String(r.id), r]));
-  const memo = new Map();
-  const stack = new Set();
-  const build = (id) => {
-    const key = String(id);
-    if (memo.has(key)) return memo.get(key);
-    if (stack.has(key)) return "";
-    stack.add(key);
-    const node = byId.get(key);
-    if (!node) {
-      stack.delete(key);
-      return "";
-    }
-    const own = node.number == null ? "" : String(node.number);
-    if (!node.parent_top_id) {
-      memo.set(key, own);
-      stack.delete(key);
-      return own;
-    }
-    const parent = build(node.parent_top_id);
-    const res = parent ? `${parent}.${own}` : own;
-    memo.set(key, res);
-    stack.delete(key);
-    return res;
-  };
-  rows.forEach((r) => build(r.id));
-  return memo;
+  return computeDisplayNumbers(rows);
 }
 
 function buildTree(nodes) {
