@@ -25,7 +25,6 @@ function createWindow() {
 
   if (isDev) {
     win.loadURL(devServerUrl);
-    win.webContents.openDevTools({ mode: 'detach' });
     return win;
   }
 
