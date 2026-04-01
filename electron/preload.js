@@ -1,9 +1,2 @@
-import { createRequire } from 'node:module';
-
-const require = createRequire(import.meta.url);
-const electron = require('electron');
-const { contextBridge } = electron;
-
-contextBridge.exposeInMainWorld('desktopApi', {
-  ping: () => 'bbm-pro-desktop',
-});
+// Preload currently not exposing additional APIs.
+// Renderer now has nodeIntegration enabled; this file stays as safety noop.

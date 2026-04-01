@@ -10,6 +10,9 @@ const __dirname = path.dirname(__filename);
 const isDev = !app.isPackaged;
 const devServerUrl = process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173';
 
+// Prefer SQLite backend in renderer/services
+process.env.BBM_USE_SQLITE = process.env.BBM_USE_SQLITE || '1';
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 1400,
@@ -18,8 +21,8 @@ function createWindow() {
     minHeight: 760,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true,
-      nodeIntegration: false,
+      contextIsolation: false,
+      nodeIntegration: true,
     },
   });
 
