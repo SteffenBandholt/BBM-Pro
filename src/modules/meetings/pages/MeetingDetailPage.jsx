@@ -18,6 +18,7 @@ import {
   listMeetingParticipants,
   setMeetingParticipant,
 } from '../services/meetingParticipantsService.js';
+import { generateProtocolPdf } from '../../../services/print/printController.js';
 
 function formatProtocolDate(date) {
   return new Intl.DateTimeFormat('de-DE', {
@@ -281,6 +282,25 @@ export default function MeetingDetailPage() {
     setParticipants(await listMeetingParticipants(meetingId));
   };
 
+  const handleDownloadPdf = () => {
+    const run = async () => {
+      try {
+        const pdfBytes = await generateProtocolPdf(meeting.project_id, meetingId);
+        const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Protokoll-${meetingId}.pdf`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (err) {
+        console.error(err);
+        alert('PDF konnte nicht erzeugt werden.');
+      }
+    };
+    void run();
+  };
+
   return (
     <section className="page-section protocol-page">
       <div className="protocol-paper">
@@ -351,6 +371,11 @@ export default function MeetingDetailPage() {
                 />
               }
             />
+            <div className="protocol-print-actions">
+              <button type="button" className="button button--secondary button--sm" onClick={handleDownloadPdf}>
+                PDF erzeugen
+              </button>
+            </div>
           </div>
         </div>
       </div>
