@@ -1,3 +1,5 @@
+import { getTrafficLightTone } from '../data/meetingTrafficLight.js';
+
 export default function ProtocolEditorPanel({
   title,
   draft,
@@ -8,6 +10,10 @@ export default function ProtocolEditorPanel({
   toolbar,
 }) {
   const isTitleLevel = Boolean(draft.level === 1);
+  const trafficLightTone = getTrafficLightTone(draft);
+  const trafficLightClass = `protocol-editor-traffic-light${
+    trafficLightTone ? ` protocol-editor-traffic-light--${trafficLightTone}` : ''
+  }`;
 
   return (
     <section className="protocol-editor-panel">
@@ -49,19 +55,16 @@ export default function ProtocolEditorPanel({
                   <span>Fertig bis</span>
                   <input type="date" value={draft.dueDate} onChange={(event) => onFieldChange('dueDate', event.target.value)} />
                 </label>
-                <button
-                  type="button"
-                  className={`protocol-editor-traffic-light protocol-editor-traffic-light--${draft.ampel || 'gelb'}`}
-                  aria-label={`Ampel ${draft.ampel || 'gelb'}`}
-                />
+                <button type="button" className={trafficLightClass} aria-label={trafficLightTone ? `Ampel ${trafficLightTone}` : 'Ampel'} />
               </div>
 
               <label className="field protocol-editor-meta__status">
                 <span>Status</span>
                 <select value={draft.status} onChange={(event) => onFieldChange('status', event.target.value)}>
-                  <option value="neu">Neu</option>
-                  <option value="übernommen">Übernommen</option>
-                  <option value="geändert">Geändert</option>
+                  <option value="offen">Offen</option>
+                  <option value="in arbeit">In Arbeit</option>
+                  <option value="blockiert">Blockiert</option>
+                  <option value="verzug">Verzug</option>
                   <option value="erledigt">Erledigt</option>
                 </select>
               </label>
@@ -82,3 +85,5 @@ export default function ProtocolEditorPanel({
     </section>
   );
 }
+
+

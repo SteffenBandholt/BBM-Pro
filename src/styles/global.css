@@ -1108,6 +1108,10 @@ a {
   cursor: pointer;
 }
 
+.protocol-top-row--title {
+  grid-template-columns: 58px minmax(0, 1fr);
+}
+
 .protocol-top-row--selected {
   background: #eef4fb;
   border-radius: 0.22rem;

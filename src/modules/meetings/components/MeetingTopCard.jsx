@@ -60,9 +60,10 @@ export default function MeetingTopCard({
           <label className="field">
             <span>Status</span>
             <select value={editingDraft.status} onChange={(event) => onEditDraftChange('status', event.target.value)}>
-              <option value="neu">Neu</option>
-              <option value="übernommen">Übernommen</option>
-              <option value="geändert">Geändert</option>
+              <option value="offen">Offen</option>
+              <option value="in arbeit">In Arbeit</option>
+              <option value="blockiert">Blockiert</option>
+              <option value="verzug">Verzug</option>
               <option value="erledigt">Erledigt</option>
             </select>
           </label>
@@ -110,3 +111,4 @@ export default function MeetingTopCard({
     </article>
   );
 }
+

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { getTrafficLightTone } from '../data/meetingTrafficLight.js';
 
 function formatCreatedAt(createdAt) {
   if (!createdAt) return '';
@@ -23,14 +24,17 @@ function ProtocolTopRow({ top, selectedTopId, onSelectTop, collapsedTopIds, onTo
   const showChildren = hasChildren && (!isTitle || !isCollapsed);
   const showCreatedAt = !isTitle && Boolean(top.createdAt);
   const createdAtLabel = showCreatedAt ? formatCreatedAt(top.createdAt) : '';
-  const trafficLightClass =
-    top.ampel === 'grün'
-      ? 'protocol-top-row__traffic-light protocol-top-row__traffic-light--green'
-      : top.ampel === 'rot'
-        ? 'protocol-top-row__traffic-light protocol-top-row__traffic-light--red'
-        : top.ampel === 'gelb'
-          ? 'protocol-top-row__traffic-light protocol-top-row__traffic-light--yellow'
-          : 'protocol-top-row__traffic-light';
+  const trafficLightTone = getTrafficLightTone(top);
+  const trafficLightClass = `protocol-top-row__traffic-light${
+    trafficLightTone ? ` protocol-top-row__traffic-light--${trafficLightTone}` : ''
+  }`;
+  const rowClassName = isTitle
+    ? isSelected
+      ? 'protocol-top-row protocol-top-row--selected protocol-top-row--title'
+      : 'protocol-top-row protocol-top-row--title'
+    : isSelected
+      ? 'protocol-top-row protocol-top-row--selected'
+      : 'protocol-top-row';
 
   return (
     <li>
@@ -52,7 +56,7 @@ function ProtocolTopRow({ top, selectedTopId, onSelectTop, collapsedTopIds, onTo
 
           <button
             type="button"
-            className={isSelected ? 'protocol-top-row protocol-top-row--selected' : 'protocol-top-row'}
+            className={rowClassName}
             onClick={() => onSelectTop(top.id)}
           >
             <span className="protocol-top-row__number-block">
@@ -63,14 +67,16 @@ function ProtocolTopRow({ top, selectedTopId, onSelectTop, collapsedTopIds, onTo
               <span className="protocol-top-row__title">{top.title}</span>
               {!isTitle && top.longtext ? <span className="protocol-top-row__text">{top.longtext}</span> : null}
             </span>
-            <span className="protocol-top-row__meta-column">
-              <span className="protocol-top-row__meta protocol-top-row__meta--due">
-                <span>{top.dueDate || 'ohne Termin'}</span>
-                <span className={trafficLightClass} aria-hidden="true" />
+            {isTitle ? null : (
+              <span className="protocol-top-row__meta-column">
+                <span className="protocol-top-row__meta protocol-top-row__meta--due">
+                  <span>{top.dueDate || 'ohne Termin'}</span>
+                  <span className={trafficLightClass} aria-hidden="true" />
+                </span>
+                <span className="protocol-top-row__meta">{top.status}</span>
+                <span className="protocol-top-row__meta">{top.responsible || 'offen'}</span>
               </span>
-              <span className="protocol-top-row__meta">{top.status}</span>
-              <span className="protocol-top-row__meta">{top.responsible || 'offen'}</span>
-            </span>
+            )}
           </button>
         </div>
       </div>
