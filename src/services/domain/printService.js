@@ -1,8 +1,4 @@
-import * as projectsRepo from "../repositories/projectsRepo.js";
-import * as meetingsRepo from "../repositories/meetingsRepo.js";
-import * as meetingTopsRepo from "../repositories/meetingTopsRepo.js";
-import * as projectFirmsRepo from "../repositories/projectFirmsRepo.js";
-import * as meetingParticipantsRepo from "../repositories/meetingParticipantsRepo.js";
+import { getRepos } from "../repositories/index.js";
 
 function computeAmpel(status, dueDate) {
   const s = String(status || "").toLowerCase();
@@ -147,6 +143,7 @@ function mapParticipants(meetingId) {
 }
 
 export function getPrintData({ mode, projectId, meetingId }) {
+  const { projectsRepo, meetingsRepo, meetingTopsRepo, projectFirmsRepo, meetingParticipantsRepo } = getRepos();
   const project = projectId ? projectsRepo.getProjectById(projectId) : null;
   const meeting = meetingId ? meetingsRepo.getMeetingById(meetingId) : null;
   if (!project || !meeting) {

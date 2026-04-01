@@ -1,4 +1,6 @@
-import * as projectsRepo from "../../../services/repositories/projectsRepo.js";
+import { getRepos } from "../../../services/repositories/index.js";
+
+const { projectsRepo } = getRepos();
 
 export async function listProjects() {
   return projectsRepo.listProjects();

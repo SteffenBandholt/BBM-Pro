@@ -1,5 +1,6 @@
-import * as meetingParticipantsRepo from "../repositories/meetingParticipantsRepo.js";
-import * as projectFirmsRepo from "../repositories/projectFirmsRepo.js";
+import { getRepos } from "../repositories/index.js";
+
+const { meetingParticipantsRepo, projectFirmsRepo } = getRepos();
 
 export function listMeetingParticipants(meetingId) {
   return meetingParticipantsRepo.listMeetingParticipants(meetingId);

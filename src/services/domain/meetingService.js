@@ -1,9 +1,8 @@
-import * as meetingsRepo from "../repositories/meetingsRepo.js";
-import * as meetingTopsRepo from "../repositories/meetingTopsRepo.js";
-import * as topsRepo from "../repositories/topsRepo.js";
+import { getRepos } from "../repositories/index.js";
 import { todayYmd } from "../utils/time.js";
 import * as participantService from "./participantService.js";
-import * as projectFirmsRepo from "../repositories/projectFirmsRepo.js";
+
+const { meetingsRepo, meetingTopsRepo, topsRepo, projectFirmsRepo } = getRepos();
 
 function buildDisplayNumbers(rows) {
   const byId = new Map(rows.map((r) => [String(r.id), r]));

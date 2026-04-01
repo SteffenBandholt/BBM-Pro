@@ -1,8 +1,7 @@
-import * as topsRepo from "../repositories/topsRepo.js";
-import * as meetingTopsRepo from "../repositories/meetingTopsRepo.js";
-import * as meetingsRepo from "../repositories/meetingsRepo.js";
+import { getRepos } from "../repositories/index.js";
 import { todayYmd } from "../utils/time.js";
-import * as projectFirmsRepo from "../repositories/projectFirmsRepo.js";
+
+const { topsRepo, meetingTopsRepo, meetingsRepo, projectFirmsRepo } = getRepos();
 
 const MAX_LEVEL = 4;
 
