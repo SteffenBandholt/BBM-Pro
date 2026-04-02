@@ -69,7 +69,14 @@ function buildChildCount(tops) {
 export default function MeetingDetailPage() {
   const { meetingId } = useParams();
   const navigate = useNavigate();
-  const [meeting, setMeeting] = useState({ id: meetingId, isClosed: false, project_id: null });
+  const [meeting, setMeeting] = useState({
+    id: meetingId,
+    isClosed: false,
+    project_id: null,
+    meeting_index: null,
+    title: '',
+    created_at: null,
+  });
   const [tops, setTops] = useState([]);
   const [firms, setFirms] = useState([]);
   const [participants, setParticipants] = useState([]);
@@ -106,7 +113,14 @@ export default function MeetingDetailPage() {
       try {
         const m = await getMeeting(meetingId);
         if (m) {
-          setMeeting({ id: m.id, isClosed: !!m.is_closed, project_id: m.project_id });
+          setMeeting({
+            id: m.id,
+            isClosed: !!m.is_closed,
+            project_id: m.project_id,
+            meeting_index: m.meeting_index ?? null,
+            title: m.title || '',
+            created_at: m.created_at || null,
+          });
           await loadFirmsAndParticipants(m.project_id);
           const rows = await listMeetingTops(meetingId);
           setTops(rows.map(mapRowToUi));
@@ -163,9 +177,17 @@ export default function MeetingDetailPage() {
   }, [selectedNode, selectedTopFlat, childCount]);
 
   const protocolLabel = useMemo(() => {
-    const date = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date());
-    return `#${meetingId} - ${date}`;
-  }, [meetingId]);
+    const sourceDate = meeting.created_at ? new Date(meeting.created_at) : new Date();
+    const date = new Intl.DateTimeFormat('de-DE', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(sourceDate);
+    const index = meeting.meeting_index ?? '';
+    const keyword = meeting.title || '';
+    const suffix = meeting.isClosed ? ' - read only !' : '';
+    return `Protokoll: #${index} - ${date} | ${keyword}${suffix}`;
+  }, [meeting.created_at, meeting.isClosed, meeting.meeting_index, meeting.title]);
 
   const topLabel = useMemo(() => {
     if (editorMode === 'create-title') return 'Neuen Titel anlegen';

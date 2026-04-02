@@ -3,7 +3,6 @@ export default function ProtocolActionBar({ protocolLabel, isClosed, onEndProtoc
     <div className="protocol-action-bar">
       <div className={isClosed ? 'protocol-action-bar__label protocol-action-bar__label--closed' : 'protocol-action-bar__label'}>
         {protocolLabel}
-        {isClosed ? ' - read only !' : ''}
       </div>
       <div className="protocol-action-bar__actions">
         <button type="button" className="button button--sm button--primary" onClick={onEndProtocol}>
