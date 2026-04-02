@@ -30,13 +30,16 @@ export function computeDisplayNumbers(rows, { useFrozen = false } = {}) {
     if (!node) return "";
     stack.add(key);
     const own = Number.isFinite(node.number) ? String(node.number) : "";
+    // Root (Level 1) -> reine eigene Nummer
     if (!node.parent) {
       display.set(key, own);
       stack.delete(key);
       return own;
     }
+    // Child: nur dann zusammensetzen, wenn Parent existiert
+    const parentNode = byId.get(String(node.parent));
     const parentDisp = assign(node.parent, stack);
-    const val = parentDisp ? `${parentDisp}.${own}` : own;
+    const val = parentNode && parentDisp ? `${parentDisp}.${own}` : own;
     display.set(key, val);
     stack.delete(key);
     return val;
