@@ -28,6 +28,7 @@ export function registerDbIpcHandlers(ipcMain) {
   ipcMain.handle('db:meetings:get', wrap((p) => meetingsRepo.getMeetingById(p.meetingId)));
   ipcMain.handle('db:meetings:close', wrap((p) => meetingsRepo.closeMeeting(p.meetingId, p.payload || {})));
   ipcMain.handle('db:meetings:updateTitle', wrap((p) => meetingsRepo.updateMeetingTitle(p)));
+  ipcMain.handle('db:meetings:updateLabel', wrap((p) => meetingsRepo.updateMeetingLabel(p)));
 
   ipcMain.handle('db:tops:create', wrap((p) => topsRepo.createTop(p)));
   ipcMain.handle('db:tops:updateTitle', wrap((p) => topsRepo.updateTitle(p)));

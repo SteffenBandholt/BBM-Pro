@@ -1,5 +1,9 @@
 import { useEffect, useState } from 'react';
-import { createMeeting as createMeetingService, listMeetings as listMeetingsService } from '../services/meetingsService.js';
+import {
+  createMeeting as createMeetingService,
+  listMeetings as listMeetingsService,
+  updateMeetingKeyword as updateMeetingKeywordService,
+} from '../services/meetingsService.js';
 
 export function useMeetings(projectId) {
   const [meetings, setMeetings] = useState([]);
@@ -41,10 +45,21 @@ export function useMeetings(projectId) {
     return newMeeting;
   };
 
+  const updateMeetingKeyword = async (meetingId, keyword) => {
+    const updatedMeeting = await updateMeetingKeywordService(meetingId, keyword);
+    setMeetings((currentMeetings) =>
+      currentMeetings.map((meeting) =>
+        String(meeting.id) === String(meetingId) ? { ...meeting, ...updatedMeeting } : meeting,
+      ),
+    );
+    return updatedMeeting;
+  };
+
   return {
     meetings,
     loading,
     error,
     createMeeting,
+    updateMeetingKeyword,
   };
 }

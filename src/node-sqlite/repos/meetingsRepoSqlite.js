@@ -7,6 +7,14 @@ function getNextIndex(db, projectId) {
   return row.next;
 }
 
+function buildMeetingCreatedAt(date) {
+  const val = (date || "").toString().trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+    return `${val}T12:00:00.000Z`;
+  }
+  return nowIso();
+}
+
 export function getMeetingById(meetingId) {
   const db = getDb();
   return db.prepare(`SELECT * FROM meetings WHERE id = ?`).get(meetingId) || null;
@@ -33,17 +41,18 @@ export function getLastClosedMeetingByProject(projectId) {
     .get(projectId) || null;
 }
 
-export function createMeeting({ projectId, title }) {
+export function createMeeting({ projectId, title, date, protocolLabel }) {
   const db = getDb();
   const open = getOpenMeetingByProject(projectId);
   if (open) return open;
   const id = createId();
   const now = nowIso();
   const idx = getNextIndex(db, projectId);
+  const createdAt = buildMeetingCreatedAt(date);
   db.prepare(
-    `INSERT INTO meetings (id, project_id, meeting_index, title, is_closed, created_at, updated_at)
-     VALUES (?, ?, ?, ?, 0, ?, ?)`,
-  ).run(id, projectId, idx, title || null, now, now);
+    `INSERT INTO meetings (id, project_id, meeting_index, title, protocol_label, is_closed, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, 0, ?, ?)`,
+  ).run(id, projectId, idx, title || null, protocolLabel || "Protokoll", createdAt, now);
   return getMeetingById(id);
 }
 
@@ -82,5 +91,12 @@ export function updateMeetingTitle({ meetingId, title }) {
   const db = getDb();
   const now = nowIso();
   db.prepare(`UPDATE meetings SET title = ?, updated_at = ? WHERE id = ?`).run(title || null, now, meetingId);
+  return getMeetingById(meetingId);
+}
+
+export function updateMeetingLabel({ meetingId, protocolLabel }) {
+  const db = getDb();
+  const now = nowIso();
+  db.prepare(`UPDATE meetings SET protocol_label = ?, updated_at = ? WHERE id = ?`).run(protocolLabel || "Protokoll", now, meetingId);
   return getMeetingById(meetingId);
 }

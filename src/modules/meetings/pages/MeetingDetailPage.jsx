@@ -13,6 +13,9 @@ import {
   deleteTop as deleteTopSvc,
   moveTop as moveTopSvc,
 } from '../services/meetingTopsService.js';
+import {
+  updateMeetingKeyword as updateMeetingKeywordSvc,
+} from '../services/meetingsService.js';
 import { getMeeting } from '../../../services/domain/meetingService.js';
 import ProtocolActionBar from '../components/ProtocolActionBar.jsx';
 import ProtocolBottomToolBar from '../components/ProtocolBottomToolBar.jsx';
@@ -74,6 +77,7 @@ export default function MeetingDetailPage() {
     isClosed: false,
     project_id: null,
     meeting_index: null,
+    protocol_label: 'Protokoll',
     title: '',
     created_at: null,
   });
@@ -118,6 +122,7 @@ export default function MeetingDetailPage() {
             isClosed: !!m.is_closed,
             project_id: m.project_id,
             meeting_index: m.meeting_index ?? null,
+            protocol_label: m.protocol_label || 'Protokoll',
             title: m.title || '',
             created_at: m.created_at || null,
           });
@@ -176,7 +181,9 @@ export default function MeetingDetailPage() {
     return null;
   }, [selectedNode, selectedTopFlat, childCount]);
 
-  const protocolLabel = useMemo(() => {
+  const protocolLabelName = 'Protokoll';
+
+  const protocolLabelMeta = useMemo(() => {
     const sourceDate = meeting.created_at ? new Date(meeting.created_at) : new Date();
     const date = new Intl.DateTimeFormat('de-DE', {
       day: '2-digit',
@@ -184,10 +191,9 @@ export default function MeetingDetailPage() {
       year: 'numeric',
     }).format(sourceDate);
     const index = meeting.meeting_index ?? '';
-    const keyword = meeting.title || '';
     const suffix = meeting.isClosed ? ' - read only !' : '';
-    return `Protokoll: #${index} - ${date} | ${keyword}${suffix}`;
-  }, [meeting.created_at, meeting.isClosed, meeting.meeting_index, meeting.title]);
+    return `#${index} - ${date}${suffix}`;
+  }, [meeting.created_at, meeting.isClosed, meeting.meeting_index]);
 
   const topLabel = useMemo(() => {
     if (editorMode === 'create-title') return 'Neuen Titel anlegen';
@@ -580,6 +586,31 @@ export default function MeetingDetailPage() {
 
   const handleClose = () => navigate(-1);
 
+  const persistMeetingKeyword = async (nextKeywordRaw) => {
+    const nextKeyword = String(nextKeywordRaw || '').trim();
+    try {
+      const updatedMeeting = await updateMeetingKeywordSvc(meetingId, nextKeyword);
+      setMeeting((current) => ({
+        ...current,
+        title: updatedMeeting.title || '',
+        meeting_index: updatedMeeting.meeting_index ?? current.meeting_index,
+        created_at: updatedMeeting.created_at || current.created_at,
+      }));
+    } catch (err) {
+      alert(err?.message || 'Schlagwort konnte nicht gespeichert werden.');
+      const freshMeeting = await getMeeting(meetingId);
+      if (freshMeeting) {
+        setMeeting((current) => ({
+          ...current,
+          title: freshMeeting.title || '',
+          meeting_index: freshMeeting.meeting_index ?? current.meeting_index,
+          created_at: freshMeeting.created_at || current.created_at,
+        }));
+      }
+      throw err;
+    }
+  };
+
   const handleToggleParticipant = async (firmId, field, value) => {
     const current = participants.find((p) => String(p.firm_id) === String(firmId));
     await setMeetingParticipant({
@@ -652,7 +683,10 @@ export default function MeetingDetailPage() {
     <section className="page-section protocol-page">
       <div className="protocol-paper">
         <ProtocolActionBar
-          protocolLabel={protocolLabel}
+          protocolLabelName={protocolLabelName}
+          protocolLabelMeta={protocolLabelMeta}
+          keyword={meeting.title || ''}
+          onKeywordSave={persistMeetingKeyword}
           isClosed={meeting.isClosed}
           onEndProtocol={handleEndProtocol}
           onClose={handleClose}

@@ -7,3 +7,11 @@ export async function listMeetings(projectId) {
 export async function createMeeting(projectId, input) {
   return localMeetingsDataSource.createMeeting(projectId, input);
 }
+
+export async function updateMeetingKeyword(meetingId, keyword) {
+  return localMeetingsDataSource.updateMeetingKeyword(meetingId, keyword);
+}
+
+export async function updateMeetingLabel(meetingId, protocolLabel) {
+  return localMeetingsDataSource.updateMeetingLabel(meetingId, protocolLabel);
+}

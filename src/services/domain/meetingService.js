@@ -80,12 +80,18 @@ async function carryOverFromMeeting(lastMeetingId, newMeetingId) {
 }
 
 
-export async function createMeeting({ projectId, title }) {
+export async function createMeeting({ projectId, title, date, protocolLabel }) {
   if (!projectId) throw new Error("projectId required");
   const existing = await meetingsRepo.getOpenMeetingByProject(projectId);
   if (existing) return existing;
 
-  const meeting = await meetingsRepo.createMeeting({ projectId, title });
+  const meetingDate = date || todayYmd();
+  const meeting = await meetingsRepo.createMeeting({
+    projectId,
+    title,
+    date: meetingDate,
+    protocolLabel: protocolLabel || "Protokoll",
+  });
 
   // Carryover from last closed meeting
   const lastClosed = await meetingsRepo.getLastClosedMeetingByProject(projectId);
@@ -108,6 +114,14 @@ export function listMeetings(projectId) {
 
 export function getMeeting(meetingId) {
   return meetingsRepo.getMeetingById(meetingId);
+}
+
+export function updateMeetingTitle({ meetingId, title }) {
+  return meetingsRepo.updateMeetingTitle({ meetingId, title });
+}
+
+export function updateMeetingLabel({ meetingId, protocolLabel }) {
+  return meetingsRepo.updateMeetingLabel({ meetingId, protocolLabel });
 }
 
 export function markTopDone({ meetingId, topId }) {

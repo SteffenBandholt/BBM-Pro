@@ -3,26 +3,36 @@ import { useNavigate, useParams } from 'react-router-dom';
 import MeetingsList from '../components/MeetingsList.jsx';
 import { useMeetings } from '../hooks/useMeetings.js';
 
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 export default function ProjectMeetingsPage() {
   const { projectId } = useParams();
   const navigate = useNavigate();
-  const { meetings, loading, error, createMeeting } = useMeetings(projectId);
+  const { meetings, loading, error, createMeeting, updateMeetingKeyword } = useMeetings(projectId);
   const [isCreating, setIsCreating] = useState(false);
-  const [title, setTitle] = useState('');
-  const [date, setDate] = useState('');
+  const [keyword, setKeyword] = useState('');
+  const [date, setDate] = useState(todayIso());
 
   const handleCreate = async () => {
-    if (!title.trim() || !date.trim()) return;
+    if (!date.trim()) return;
 
     const newMeeting = await createMeeting({
-      title: title.trim(),
+      keyword: keyword.trim(),
       date,
     });
 
-    setTitle('');
-    setDate('');
+    setKeyword('');
+    setDate(todayIso());
     setIsCreating(false);
     navigate(`/meetings/${newMeeting.id}`);
+  };
+
+  const handleStartCreate = () => {
+    setKeyword('');
+    setDate(todayIso());
+    setIsCreating(true);
   };
 
   return (
@@ -31,9 +41,9 @@ export default function ProjectMeetingsPage() {
         <div>
           <p className="meeting-list-hero__eyebrow">Besprechungen im Projekt</p>
           <h1>Besprechungen</h1>
-          <p>Hier öffnest du laufende Protokolle oder legst schnell eine neue Besprechung an.</p>
+          <p>Hier oeffnest du laufende Protokolle oder legst schnell eine neue Besprechung an.</p>
         </div>
-        <button type="button" className="button meeting-list-hero__cta" onClick={() => setIsCreating(true)}>
+        <button type="button" className="button meeting-list-hero__cta" onClick={handleStartCreate}>
           Neue Besprechung
         </button>
       </div>
@@ -41,12 +51,12 @@ export default function ProjectMeetingsPage() {
       {isCreating ? (
         <section className="meeting-list-create">
           <label className="field">
-            <span>Titel</span>
-            <input value={title} onChange={(event) => setTitle(event.target.value)} />
-          </label>
-          <label className="field">
             <span>Datum</span>
             <input type="date" value={date} onChange={(event) => setDate(event.target.value)} />
+          </label>
+          <label className="field">
+            <span>Schlagwort (optional)</span>
+            <input value={keyword} onChange={(event) => setKeyword(event.target.value)} />
           </label>
           <div className="form-actions">
             <button type="button" className="button" onClick={handleCreate}>
@@ -62,7 +72,11 @@ export default function ProjectMeetingsPage() {
       {loading ? <p>Lade Besprechungen ...</p> : null}
       {error ? <p className="form-error">{error}</p> : null}
       {!loading && !error ? (
-        <MeetingsList meetings={meetings} onMeetingClick={(meeting) => navigate(`/meetings/${meeting.id}`)} />
+        <MeetingsList
+          meetings={meetings}
+          onMeetingClick={(meeting) => navigate(`/meetings/${meeting.id}`)}
+          onMeetingKeywordSave={updateMeetingKeyword}
+        />
       ) : null}
     </section>
   );

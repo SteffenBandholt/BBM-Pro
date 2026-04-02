@@ -126,6 +126,14 @@ const MIGRATIONS = [
     );
     `,
   },
+  {
+    id: 2,
+    name: "meetings-protocol-label",
+    sql: `
+    ALTER TABLE meetings ADD COLUMN protocol_label TEXT;
+    UPDATE meetings SET protocol_label = 'Protokoll' WHERE protocol_label IS NULL OR TRIM(protocol_label) = '';
+    `,
+  },
 ];
 
 export function runMigrations() {

@@ -5,6 +5,14 @@ function nowIso() {
   return new Date().toISOString();
 }
 
+function buildMeetingCreatedAt(date) {
+  const val = (date || "").toString().trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+    return `${val}T12:00:00.000Z`;
+  }
+  return nowIso();
+}
+
 function nextMeetingIndex(db, projectId) {
   const indices = db.meetings
     .filter((m) => String(m.project_id) === String(projectId))
@@ -42,7 +50,7 @@ export function getLastClosedMeetingByProject(projectId) {
   );
 }
 
-export function createMeeting({ projectId, title = "" }) {
+export function createMeeting({ projectId, title = "", date = "", protocolLabel = "Protokoll" }) {
   const db = readDb();
   const existingOpen = getOpenMeetingByProject(projectId);
   if (existingOpen) return existingOpen;
@@ -50,13 +58,15 @@ export function createMeeting({ projectId, title = "" }) {
   const id = createId();
   const meeting_index = nextMeetingIndex(db, projectId);
   const now = nowIso();
+  const createdAt = buildMeetingCreatedAt(date);
   const meeting = {
     id,
     project_id: projectId,
     meeting_index,
     title,
+    protocol_label: protocolLabel || "Protokoll",
     is_closed: 0,
-    created_at: now,
+    created_at: createdAt,
     updated_at: now,
   };
   db.meetings = [...db.meetings, meeting];
@@ -80,6 +90,40 @@ export function closeMeeting(meetingId, { pdfShowAmpel = null, todoSnapshotJson 
       next_meeting_time: nextMeeting?.time ?? null,
       next_meeting_place: nextMeeting?.place ?? null,
       next_meeting_extra: nextMeeting?.extra ?? null,
+      updated_at: now,
+    };
+    return result;
+  });
+  writeDb(db);
+  return result;
+}
+
+export function updateMeetingTitle({ meetingId, title }) {
+  const db = readDb();
+  let result = null;
+  db.meetings = db.meetings.map((m) => {
+    if (String(m.id) !== String(meetingId)) return m;
+    const now = nowIso();
+    result = {
+      ...m,
+      title: title || null,
+      updated_at: now,
+    };
+    return result;
+  });
+  writeDb(db);
+  return result;
+}
+
+export function updateMeetingLabel({ meetingId, protocolLabel }) {
+  const db = readDb();
+  let result = null;
+  db.meetings = db.meetings.map((m) => {
+    if (String(m.id) !== String(meetingId)) return m;
+    const now = nowIso();
+    result = {
+      ...m,
+      protocol_label: protocolLabel || "Protokoll",
       updated_at: now,
     };
     return result;

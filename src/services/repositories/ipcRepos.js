@@ -28,6 +28,7 @@ export const meetingsRepo = {
   createMeeting: (p) => invoke("db:meetings:create", p),
   closeMeeting: (meetingId, payload) => invoke("db:meetings:close", { meetingId, payload }),
   updateMeetingTitle: ({ meetingId, title }) => invoke("db:meetings:updateTitle", { meetingId, title }),
+  updateMeetingLabel: ({ meetingId, protocolLabel }) => invoke("db:meetings:updateLabel", { meetingId, protocolLabel }),
 };
 
 export const topsRepo = {
