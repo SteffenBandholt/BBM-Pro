@@ -23,7 +23,7 @@ export default function ProtocolEditorPanel({
   }`;
 
   const disableTitle = isReadOnly || titleLocked;
-  const disableMeta = isReadOnly || isTitleLevel;
+  const hideMeta = isTitleLevel;
 
   return (
     <section className="protocol-editor-panel">
@@ -93,7 +93,7 @@ export default function ProtocolEditorPanel({
           )}
         </div>
 
-        {disableMeta ? null : (
+        {hideMeta ? null : (
           <aside className="protocol-editor-meta-column">
             <div className="protocol-editor-meta-column__grid">
               <div className="protocol-editor-meta-column__row protocol-editor-meta-column__row--top">
