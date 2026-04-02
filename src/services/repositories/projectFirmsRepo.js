@@ -4,14 +4,16 @@ import { nowIso } from "../utils/time.js";
 
 export function listByProject(projectId) {
   const db = readDb();
-  return db.projectFirms
+  const firms = db.projectFirms || [];
+  return firms
     .filter((f) => String(f.project_id) === String(projectId) && !f.removed_at)
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export function getById(firmId) {
   const db = readDb();
-  return db.projectFirms.find((f) => String(f.id) === String(firmId) && !f.removed_at) || null;
+  const firms = db.projectFirms || [];
+  return firms.find((f) => String(f.id) === String(firmId) && !f.removed_at) || null;
 }
 
 export function createFirm({ projectId, name, shortLabel = "" }) {

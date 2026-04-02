@@ -1,10 +1,13 @@
 /**
  * Backend selector for repositories.
- * Default: local (localStorage). Optional: sqlite (better-sqlite3).
+ * Default: local (localStorage). Optional: sqlite (better-sqlite3) or IPC bridge.
  * Falls back to local if sqlite not available at runtime.
  */
 
+const isElectronMain = typeof process !== "undefined" && process?.versions?.electron && process?.type !== "renderer";
+const isElectronRenderer = typeof process !== "undefined" && process?.versions?.electron && process?.type === "renderer";
 const preferSqlite =
+  isElectronMain ||
   (typeof import.meta !== "undefined" && import.meta.env?.VITE_USE_SQLITE === "1") ||
   (typeof process !== "undefined" && process.env?.BBM_USE_SQLITE === "1");
 
@@ -39,14 +42,16 @@ function loadSqlite() {
   if (sqliteRepos) return sqliteRepos;
   try {
     if (!safeRequire) throw new Error("require not available");
-    // Use dynamic require to avoid bundler issues in browser build
-    const proj = safeRequire("../../node-sqlite/repos/projectsRepoSqlite.js");
-    const meet = safeRequire("../../node-sqlite/repos/meetingsRepoSqlite.js");
-    const tops = safeRequire("../../node-sqlite/repos/topsRepoSqlite.js");
-    const mtops = safeRequire("../../node-sqlite/repos/meetingTopsRepoSqlite.js");
-    const firms = safeRequire("../../node-sqlite/repos/projectFirmsRepoSqlite.js");
-    const persons = safeRequire("../../node-sqlite/repos/projectPersonsRepoSqlite.js");
-    const participants = safeRequire("../../node-sqlite/repos/meetingParticipantsRepoSqlite.js");
+    const path = safeRequire("path");
+    const base = path.join(process.cwd(), "src", "node-sqlite", "repos");
+    const req = (file) => safeRequire(path.join(base, file));
+    const proj = req("projectsRepoSqlite.js");
+    const meet = req("meetingsRepoSqlite.js");
+    const tops = req("topsRepoSqlite.js");
+    const mtops = req("meetingTopsRepoSqlite.js");
+    const firms = req("projectFirmsRepoSqlite.js");
+    const persons = req("projectPersonsRepoSqlite.js");
+    const participants = req("meetingParticipantsRepoSqlite.js");
     sqliteRepos = {
       projectsRepo: proj,
       meetingsRepo: meet,
@@ -65,6 +70,9 @@ function loadSqlite() {
   return sqliteRepos;
 }
 
+// IPC repos (renderer, contextIsolation)
+import * as ipcRepos from "./ipcRepos.js";
+
 // Local repos
 import * as localProjectsRepo from "./projectsRepo.js";
 import * as localMeetingsRepo from "./meetingsRepo.js";
@@ -75,10 +83,24 @@ import * as localProjectPersonsRepo from "./projectPersonsRepo.js";
 import * as localMeetingParticipantsRepo from "./meetingParticipantsRepo.js";
 
 export function getRepos() {
+  // Renderer path: IPC is mandatory in Electron
+  if (typeof window !== "undefined") {
+    if (window.desktopApi?.invoke) {
+      backend = "ipc";
+      return ipcRepos;
+    }
+    if (isElectronRenderer) {
+      throw new Error("[persistence] IPC bridge missing in Electron renderer (desktopApi.invoke not available)");
+    }
+  }
+
   if (preferSqlite && canUseNodeSqlite()) {
     const sqlite = loadSqlite();
     if (sqlite) return sqlite;
+    throw new Error("[persistence] SQLite preferred but could not be loaded in this runtime");
   }
+
+  backend = "local";
   return {
     projectsRepo: localProjectsRepo,
     meetingsRepo: localMeetingsRepo,
@@ -91,6 +113,7 @@ export function getRepos() {
 }
 
 export function getBackendKind() {
+  if (typeof window !== "undefined" && window.desktopApi?.invoke) return "ipc";
   if (backend === "local" && preferSqlite && canUseNodeSqlite()) {
     loadSqlite();
   }

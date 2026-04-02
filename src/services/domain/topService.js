@@ -5,8 +5,8 @@ const { topsRepo, meetingTopsRepo, meetingsRepo, projectFirmsRepo } = getRepos()
 
 const MAX_LEVEL = 4;
 
-function assertOpenMeeting(meetingId) {
-  const meeting = meetingsRepo.getMeetingById(meetingId);
+async function assertOpenMeeting(meetingId) {
+  const meeting = await meetingsRepo.getMeetingById(meetingId);
   if (!meeting) throw new Error("Meeting not found");
   if (meeting.is_closed) throw new Error("Meeting is closed");
   return meeting;
@@ -18,12 +18,12 @@ function ensureLevel(level) {
   return lv;
 }
 
-export function listByMeeting(meetingId) {
+export async function listByMeeting(meetingId) {
   return meetingTopsRepo.listJoinedByMeeting(meetingId);
 }
 
-export function createTop({ projectId, meetingId, parentTopId = null, level, title }) {
-  const meeting = assertOpenMeeting(meetingId);
+export async function createTop({ projectId, meetingId, parentTopId = null, level, title }) {
+  const meeting = await assertOpenMeeting(meetingId);
   if (String(meeting.project_id) !== String(projectId)) throw new Error("Project mismatch");
   const lvl = ensureLevel(level);
   if (lvl > 1 && !parentTopId) throw new Error("Parent required for non-root");
@@ -31,14 +31,14 @@ export function createTop({ projectId, meetingId, parentTopId = null, level, tit
   if (lvl > MAX_LEVEL) throw new Error("Max level exceeded");
 
   if (parentTopId) {
-    const parent = topsRepo.getTopById(parentTopId);
+    const parent = await topsRepo.getTopById(parentTopId);
     if (!parent || String(parent.project_id) !== String(projectId)) throw new Error("Parent not found");
     if (Number(parent.level) !== lvl - 1) throw new Error("Parent level mismatch");
   }
 
-  const number = topsRepo.getNextNumber(projectId, parentTopId || null);
-  const created = topsRepo.createTop({ projectId, parentTopId, level: lvl, number, title });
-  meetingTopsRepo.attachTopToMeeting({
+  const number = await topsRepo.getNextNumber(projectId, parentTopId || null);
+  const created = await topsRepo.createTop({ projectId, parentTopId, level: lvl, number, title });
+  await meetingTopsRepo.attachTopToMeeting({
     meetingId,
     topId: created.id,
     status: "offen",
@@ -48,19 +48,19 @@ export function createTop({ projectId, meetingId, parentTopId = null, level, tit
   return created;
 }
 
-export function moveTop({ topId, targetParentId = null }) {
-  const top = topsRepo.getTopById(topId);
+export async function moveTop({ topId, targetParentId = null }) {
+  const top = await topsRepo.getTopById(topId);
   if (!top) throw new Error("TOP not found");
 
-  const openMeeting = meetingsRepo.getOpenMeetingByProject(top.project_id);
+  const openMeeting = await meetingsRepo.getOpenMeetingByProject(top.project_id);
   if (!openMeeting) throw new Error("No open meeting for project");
-  const mt = meetingTopsRepo.getMeetingTop(openMeeting.id, topId);
+  const mt = await meetingTopsRepo.getMeetingTop(openMeeting.id, topId);
   if (!mt) throw new Error("TOP not in open meeting");
   if (mt.is_carried_over) throw new Error("Carried TOP cannot move");
 
   if (targetParentId) {
     if (String(targetParentId) === String(topId)) throw new Error("Cannot move under itself");
-    const parent = topsRepo.getTopById(targetParentId);
+    const parent = await topsRepo.getTopById(targetParentId);
     if (!parent || String(parent.project_id) !== String(top.project_id))
       throw new Error("Target parent missing or different project");
     if (Number(parent.level) >= MAX_LEVEL) throw new Error("Target too deep");
@@ -70,15 +70,16 @@ export function moveTop({ topId, targetParentId = null }) {
     while (cur && guard < 100) {
       if (String(cur.id) === String(topId)) throw new Error("Cycle not allowed");
       if (!cur.parent_top_id) break;
-      cur = topsRepo.getTopById(cur.parent_top_id);
+      cur = await topsRepo.getTopById(cur.parent_top_id);
       guard += 1;
     }
   } else if (Number(top.level) !== 1) {
     throw new Error("Only level-1 may be root");
   }
 
-  const newLevel = targetParentId ? (topsRepo.getTopById(targetParentId).level || 0) + 1 : 1;
-  const newNumber = topsRepo.getNextNumber(top.project_id, targetParentId || null);
+  const newParent = targetParentId ? await topsRepo.getTopById(targetParentId) : null;
+  const newLevel = targetParentId ? ((newParent?.level || 0) + 1) : 1;
+  const newNumber = await topsRepo.getNextNumber(top.project_id, targetParentId || null);
   return topsRepo.moveTop({ topId, targetParentId, newLevel, newNumber });
 }
 
@@ -95,9 +96,9 @@ function detectTouched(prev, patch) {
   return fields.some(([key, norm]) => norm(patch[key]) !== norm(prev[key] ?? prev[key.replace("_", "")]));
 }
 
-export function updateMeetingFields({ meetingId, topId, patch }) {
-  assertOpenMeeting(meetingId);
-  const mt = meetingTopsRepo.getMeetingTop(meetingId, topId);
+export async function updateMeetingFields({ meetingId, topId, patch }) {
+  await assertOpenMeeting(meetingId);
+  const mt = await meetingTopsRepo.getMeetingTop(meetingId, topId);
   if (!mt) throw new Error("TOP not in meeting");
 
   const isCarried = Number(mt.is_carried_over) === 1;
@@ -117,10 +118,10 @@ export function updateMeetingFields({ meetingId, topId, patch }) {
 
   // Title updates: forbid on carried-over? keep simple: allow, still sets touched.
   if (next.title !== undefined) {
-    topsRepo.updateTitle({ topId, title: next.title });
+    await topsRepo.updateTitle({ topId, title: next.title });
   }
   if (next.is_hidden !== undefined) {
-    topsRepo.setHidden({ topId, isHidden: !!next.is_hidden });
+    await topsRepo.setHidden({ topId, isHidden: !!next.is_hidden });
   }
 
   // Validate responsible firm
@@ -133,7 +134,7 @@ export function updateMeetingFields({ meetingId, topId, patch }) {
       next.responsible_label = null;
     } else if (kind === "firm") {
       if (!responsibleId) throw new Error("Verantwortliche Firma fehlt");
-      const firm = projectFirmsRepo.getById(responsibleId);
+      const firm = await projectFirmsRepo.getById(responsibleId);
       if (!firm) throw new Error("Verantwortliche Firma existiert nicht");
       next.responsible_kind = "firm";
       next.responsible_id = firm.id;
@@ -163,12 +164,12 @@ export function updateMeetingFields({ meetingId, topId, patch }) {
   });
 }
 
-export function deleteTop({ meetingId, topId }) {
-  assertOpenMeeting(meetingId);
-  const mt = meetingTopsRepo.getMeetingTop(meetingId, topId);
+export async function deleteTop({ meetingId, topId }) {
+  await assertOpenMeeting(meetingId);
+  const mt = await meetingTopsRepo.getMeetingTop(meetingId, topId);
   if (!mt) throw new Error("TOP not in meeting");
   if (Number(mt.is_carried_over) === 1) throw new Error("Carried TOP cannot be deleted");
-  if (topsRepo.hasChildren(topId)) throw new Error("TOP has children");
-  meetingTopsRepo.deleteByTopId(topId);
+  if (await topsRepo.hasChildren(topId)) throw new Error("TOP has children");
+  await meetingTopsRepo.deleteByTopId(topId);
   return topsRepo.softDeleteTop({ topId });
 }

@@ -19,9 +19,11 @@ export function useDashboard() {
           setModules(data.modules);
           setProjects(data.projects);
         }
-      } catch {
+      } catch (err) {
+        // Sichtbar machen, warum das Dashboard nicht lädt.
+        console.error('[dashboard] loadDashboard failed', err);
         if (isActive) {
-          setError('Dashboard konnte nicht geladen werden.');
+          setError(err?.message || 'Dashboard konnte nicht geladen werden.');
         }
       } finally {
         if (isActive) {

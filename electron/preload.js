@@ -1,2 +1,10 @@
-// Preload currently not exposing additional APIs.
-// Renderer now has nodeIntegration enabled; this file stays as safety noop.
+import { contextBridge, ipcRenderer } from 'electron';
+
+/**
+ * Expose a minimal, safe IPC bridge to the renderer.
+ * Only channel-based invoke is exposed; native modules remain inaccessible.
+ */
+contextBridge.exposeInMainWorld('desktopApi', {
+  invoke: (channel, payload) => ipcRenderer.invoke(channel, payload),
+  ping: () => true,
+});

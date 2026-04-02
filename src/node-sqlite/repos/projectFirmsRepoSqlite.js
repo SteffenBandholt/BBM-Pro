@@ -24,3 +24,11 @@ export function createFirm({ projectId, name, shortLabel = "" }) {
   ).run(id, projectId, name?.trim() || "Firma", shortLabel?.trim() || name || "Firma", now, now);
   return getById(id);
 }
+
+export function ensureSampleFirms(projectId) {
+  const existing = listByProject(projectId);
+  if (existing.length > 0) return existing;
+  createFirm({ projectId, name: "Musterbau GmbH", shortLabel: "Musterbau" });
+  createFirm({ projectId, name: "Planung AG", shortLabel: "Planung" });
+  return listByProject(projectId);
+}

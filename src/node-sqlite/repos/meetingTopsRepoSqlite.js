@@ -154,3 +154,48 @@ export function deleteByTopId(topId) {
   const info = db.prepare(`DELETE FROM meeting_tops WHERE top_id = ?`).run(topId);
   return { deleted: info.changes };
 }
+
+export function carryOverFromMeeting(fromMeetingId, toMeetingId, { skipIds = new Set() } = {}) {
+  const db = getDb();
+  const rows = listJoinedByMeeting(fromMeetingId).filter((r) => !skipIds.has(r.id) && !r.is_hidden);
+  const now = nowIso();
+  const tx = db.transaction(() => {
+    rows.forEach((row) => {
+      const payload = ensureDefaults({
+        meeting_id: toMeetingId,
+        top_id: row.id,
+        status: row.status,
+        due_date: row.due_date,
+        longtext: row.longtext,
+        is_carried_over: 1,
+        is_task: row.is_task,
+        is_decision: row.is_decision,
+        is_important: row.is_important,
+        is_touched: row.is_touched,
+        responsible_kind: row.responsible_kind,
+        responsible_id: row.responsible_id,
+        responsible_label: row.responsible_label,
+        contact_kind: row.contact_kind,
+        contact_person_id: row.contact_person_id,
+        contact_label: row.contact_label,
+        created_at: now,
+        updated_at: now,
+      });
+      db.prepare(
+        `INSERT OR REPLACE INTO meeting_tops
+        (meeting_id, top_id, status, due_date, longtext, is_carried_over, is_task, is_decision, completed_in_meeting_id,
+         is_important, is_touched, responsible_kind, responsible_id, responsible_label,
+         contact_kind, contact_person_id, contact_label, frozen_at, frozen_title, frozen_is_hidden,
+         frozen_parent_top_id, frozen_level, frozen_number, frozen_display_number, frozen_ampel_color, frozen_ampel_reason,
+         created_at, updated_at)
+         VALUES (@meeting_id,@top_id,@status,@due_date,@longtext,@is_carried_over,@is_task,@is_decision,@completed_in_meeting_id,
+         @is_important,@is_touched,@responsible_kind,@responsible_id,@responsible_label,
+         @contact_kind,@contact_person_id,@contact_label,@frozen_at,@frozen_title,@frozen_is_hidden,
+         @frozen_parent_top_id,@frozen_level,@frozen_number,@frozen_display_number,@frozen_ampel_color,@frozen_ampel_reason,
+         @created_at,@updated_at)`
+      ).run(payload);
+    });
+  });
+  tx();
+  return { inserted: rows.length };
+}

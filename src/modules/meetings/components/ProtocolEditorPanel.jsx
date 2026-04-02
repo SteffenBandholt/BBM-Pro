@@ -3,6 +3,7 @@ import { getTrafficLightTone } from '../data/meetingTrafficLight.js';
 export default function ProtocolEditorPanel({
   title,
   draft,
+  responsibleOptions = [],
   onFieldChange,
   onSave,
   onDelete,

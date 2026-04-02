@@ -69,32 +69,35 @@ function shouldSkipCarryover(row) {
   return false;
 }
 
-function carryOverFromMeeting(lastMeetingId, newMeetingId) {
+async function carryOverFromMeeting(lastMeetingId, newMeetingId) {
   if (!lastMeetingId) return { inserted: 0 };
   // Filter rows to skip (erledigt, bereits einmal übernommen, nicht verändert)
-  const sourceRows = meetingTopsRepo.listJoinedByMeeting(lastMeetingId);
+  const sourceRows = await meetingTopsRepo.listJoinedByMeeting(lastMeetingId);
   const skipIds = new Set(
     sourceRows.filter((r) => shouldSkipCarryover(r)).map((r) => r.id),
   );
   return meetingTopsRepo.carryOverFromMeeting(lastMeetingId, newMeetingId, { skipIds });
 }
 
-export function createMeeting({ projectId, title }) {
+
+export async function createMeeting({ projectId, title }) {
   if (!projectId) throw new Error("projectId required");
-  const existing = meetingsRepo.getOpenMeetingByProject(projectId);
+  const existing = await meetingsRepo.getOpenMeetingByProject(projectId);
   if (existing) return existing;
 
-  const meeting = meetingsRepo.createMeeting({ projectId, title });
+  const meeting = await meetingsRepo.createMeeting({ projectId, title });
 
   // Carryover from last closed meeting
-  const lastClosed = meetingsRepo.getLastClosedMeetingByProject(projectId);
+  const lastClosed = await meetingsRepo.getLastClosedMeetingByProject(projectId);
   if (lastClosed?.id) {
-    carryOverFromMeeting(lastClosed.id, meeting.id);
+    await carryOverFromMeeting(lastClosed.id, meeting.id);
   }
 
   // Seed participants from project firms
-  projectFirmsRepo.ensureSampleFirms(projectId);
-  participantService.seedParticipantsFromProject(meeting.id, projectId);
+  if (projectFirmsRepo.ensureSampleFirms) {
+    await projectFirmsRepo.ensureSampleFirms(projectId);
+  }
+  await participantService.seedParticipantsFromProject(meeting.id, projectId);
 
   return meeting;
 }
@@ -152,15 +155,15 @@ function checkNumberGaps(rows) {
   return { gaps, markTopIds: Array.from(markTopIds) };
 }
 
-function snapshotMeetingTops(meetingId) {
-  const rows = meetingTopsRepo.listJoinedByMeeting(meetingId);
+async function snapshotMeetingTops(meetingId) {
+  const rows = await meetingTopsRepo.listJoinedByMeeting(meetingId);
   const displayMap = buildDisplayNumbers(rows);
   const now = new Date().toISOString();
 
-  rows.forEach((row) => {
+  await Promise.all(rows.map((row) => {
     const disp = displayMap.get(String(row.id)) || String(row.number || "");
     const ampel = computeAmpel(row.status, row.due_date);
-    meetingTopsRepo.updateMeetingTop({
+    return meetingTopsRepo.updateMeetingTop({
       meetingId,
       topId: row.id,
       // frozen fields
@@ -174,15 +177,15 @@ function snapshotMeetingTops(meetingId) {
       frozen_ampel_reason: ampel.reason,
       frozen_at: now,
     });
-  });
+  }));
 }
 
-export function closeMeeting(meetingId) {
-  const meeting = meetingsRepo.getMeetingById(meetingId);
+export async function closeMeeting(meetingId) {
+  const meeting = await meetingsRepo.getMeetingById(meetingId);
   if (!meeting) return { ok: false, errorCode: "NOT_FOUND", error: "Besprechung nicht gefunden." };
   if (meeting.is_closed) return { ok: false, errorCode: "ALREADY_CLOSED", error: "Besprechung ist bereits geschlossen." };
 
-  const rows = meetingTopsRepo.listJoinedByMeeting(meetingId);
+  const rows = await meetingTopsRepo.listJoinedByMeeting(meetingId);
   const gapCheck = checkNumberGaps(rows);
   if (gapCheck.gaps.length > 0) {
     return {
@@ -195,9 +198,9 @@ export function closeMeeting(meetingId) {
   }
 
   // snapshot frozen_* for print/carryover consistency
-  snapshotMeetingTops(meetingId);
+  await snapshotMeetingTops(meetingId);
 
-  const closed = meetingsRepo.closeMeeting(meetingId, {});
+  const closed = await meetingsRepo.closeMeeting(meetingId, {});
   return { ok: true, meeting: closed };
 }
 

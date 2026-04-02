@@ -2,12 +2,12 @@ import { getRepos } from "../repositories/index.js";
 
 const { meetingParticipantsRepo, projectFirmsRepo } = getRepos();
 
-export function listMeetingParticipants(meetingId) {
+export async function listMeetingParticipants(meetingId) {
   return meetingParticipantsRepo.listMeetingParticipants(meetingId);
 }
 
-export function setMeetingParticipant({ meetingId, firmId, is_present, is_in_distribution }) {
-  const firm = projectFirmsRepo.getById(firmId);
+export async function setMeetingParticipant({ meetingId, firmId, is_present, is_in_distribution }) {
+  const firm = await projectFirmsRepo.getById(firmId);
   if (!firm) throw new Error("Firma nicht gefunden");
   return meetingParticipantsRepo.setMeetingParticipant({
     meetingId,
@@ -17,6 +17,6 @@ export function setMeetingParticipant({ meetingId, firmId, is_present, is_in_dis
   });
 }
 
-export function seedParticipantsFromProject(meetingId, projectId) {
+export async function seedParticipantsFromProject(meetingId, projectId) {
   return meetingParticipantsRepo.seedFromProject(meetingId, projectId);
 }

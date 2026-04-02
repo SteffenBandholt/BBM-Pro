@@ -103,36 +103,39 @@ function filterVisible(rows, isClosed) {
   });
 }
 
-function mapParticipants(meetingId) {
-  const list = meetingParticipantsRepo.listMeetingParticipants(meetingId);
-  return list.map((p) => {
-    const firm = projectFirmsRepo.getById(p.firm_id);
-    return {
+async function mapParticipants(meetingId, projectFirmsRepo, meetingParticipantsRepo) {
+  const list = await meetingParticipantsRepo.listMeetingParticipants(meetingId);
+  const result = [];
+  for (const p of list) {
+    const firm = projectFirmsRepo.getById ? await projectFirmsRepo.getById(p.firm_id) : null;
+    result.push({
       kind: "firm",
       firmId: p.firm_id,
       firmName: firm?.name || "",
       isPresent: !!p.is_present,
       isInDistribution: !!p.is_in_distribution,
-    };
-  });
+    });
+  }
+  return result;
 }
 
-export function getPrintData({ mode, projectId, meetingId }) {
-  const { projectsRepo, meetingsRepo, meetingTopsRepo, projectFirmsRepo, meetingParticipantsRepo } = getRepos();
-  const project = projectId ? projectsRepo.getProjectById(projectId) : null;
-  const meeting = meetingId ? meetingsRepo.getMeetingById(meetingId) : null;
+export async function getPrintData({ mode, projectId, meetingId }, injectedRepos = null) {
+  const { projectsRepo, meetingsRepo, meetingTopsRepo, projectFirmsRepo, meetingParticipantsRepo } =
+    injectedRepos || getRepos();
+  const project = projectId ? await projectsRepo.getProjectById(projectId) : null;
+  const meeting = meetingId ? await meetingsRepo.getMeetingById(meetingId) : null;
   if (!project || !meeting) {
     throw new Error("Projekt oder Meeting nicht gefunden");
   }
 
   const isClosed = !!meeting.is_closed;
-  const rows = meetingTopsRepo.listJoinedByMeeting(meetingId);
+  const rows = await meetingTopsRepo.listJoinedByMeeting(meetingId);
   const visibleRows = filterVisible(rows, isClosed);
   const displayMap = buildDisplayNumbers(visibleRows);
   const normalized = visibleRows.map((r) => normalizeTop(r, isClosed, displayMap));
 
   const tree = buildTree(normalized);
-  const participants = mapParticipants(meetingId);
+  const participants = await mapParticipants(meetingId, projectFirmsRepo, meetingParticipantsRepo);
 
   const base = {
     mode,
