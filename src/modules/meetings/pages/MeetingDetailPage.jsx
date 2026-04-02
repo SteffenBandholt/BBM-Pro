@@ -148,7 +148,7 @@ export default function MeetingDetailPage() {
 
   const startCreateChildTop = () => {
     if (!selectedTop) return;
-    if (Number(selectedTop.level) >= 4) return;
+    if (Number(selectedTop.level) !== 1) return; // TOP nur unter Titel
     setEditorMode('create-child');
     setEditorDraft({
       title: '',
@@ -160,6 +160,25 @@ export default function MeetingDetailPage() {
       responsibleId: '',
       isImportant: false,
       level: selectedTop.level + 1,
+      parentTopId: selectedTop.id ?? null,
+    });
+  };
+
+  const startCreateSubChildTop = () => {
+    if (!selectedTop) return;
+    const lvl = Number(selectedTop.level);
+    if (lvl < 1 || lvl >= 4) return;
+    setEditorMode('create-child');
+    setEditorDraft({
+      title: '',
+      longtext: '',
+      dueDate: '',
+      ampel: 'gelb',
+      status: 'offen',
+      responsible: '',
+      responsibleId: '',
+      isImportant: false,
+      level: lvl + 1,
       parentTopId: selectedTop.id ?? null,
     });
   };
@@ -203,7 +222,7 @@ export default function MeetingDetailPage() {
           if (created?.id) setSelectedTopId(created.id);
         } else if (editorMode === 'create-child') {
           if (!selectedTop) return;
-          const level = Math.min(4, (Number(selectedTop.level) || 1) + 1);
+          const level = Math.min(4, editorDraft.level || (Number(selectedTop.level) || 1) + 1);
           const created = await createTopSvc({
             projectId: meeting.project_id,
             meetingId,
@@ -423,14 +442,15 @@ export default function MeetingDetailPage() {
               onCancel={handleCancelEdit}
               onToggleImportant={(checked) => handleEditorFieldChange('isImportant', checked)}
               toolbar={
-                <ProtocolBottomToolBar
-                  tops={tops}
-                  selectedTop={selectedTop}
-                  onStartRootCreate={startCreateRootTop}
-                  onStartChildCreate={startCreateChildTop}
-                />
-              }
+            <ProtocolBottomToolBar
+              tops={tops}
+              selectedTop={selectedTop}
+              onStartRootCreate={startCreateRootTop}
+              onStartChildCreate={startCreateChildTop}
+              onStartSubChildCreate={startCreateSubChildTop}
             />
+          }
+        />
             <div className="protocol-print-actions">
               <button type="button" className="button button--secondary button--sm" onClick={handleDownloadPdf}>
                 PDF erzeugen
