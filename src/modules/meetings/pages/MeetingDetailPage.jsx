@@ -568,7 +568,12 @@ export default function MeetingDetailPage() {
         }
         return;
       }
-      setMeeting((current) => ({ ...current, isClosed: true }));
+      const projectId = res.meeting?.project_id || meeting.project_id || null;
+      if (projectId) {
+        navigate(`/projects/${projectId}/meetings`, { replace: true });
+        return;
+      }
+      navigate('/projects', { replace: true });
     };
     void run();
   };
