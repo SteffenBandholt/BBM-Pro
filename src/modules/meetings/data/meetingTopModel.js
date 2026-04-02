@@ -148,6 +148,9 @@ function normalizeTop(top) {
     title: top.title ?? '',
     longtext: top.longtext ?? '',
     dueDate: top.dueDate ?? null,
+    responsibleId: top.responsibleId ?? top.responsible_id ?? null,
+    responsibleKind: top.responsibleKind ?? top.responsible_kind ?? null,
+    responsibleLabel: top.responsibleLabel ?? top.responsible_label ?? top.responsible ?? '',
     createdAt: top.createdAt ?? DEFAULT_CREATED_AT,
     ampel: top.ampel ?? 'gelb',
     responsible: top.responsible ?? '',
@@ -160,6 +163,7 @@ function normalizeTop(top) {
     isImportant: Boolean(top.isImportant),
     level: top.level ?? 1,
     parentTopId: top.parentTopId ?? null,
+    parent_top_id: top.parentTopId ?? null,
     number: top.number ?? 1,
   };
 }
@@ -391,6 +395,9 @@ export function updateMeetingTop(tops, topId, draft) {
       title: nextTitle,
       longtext: draft.longtext?.trim() ?? '',
       dueDate: draft.dueDate || null,
+      responsibleId: draft.responsibleId ?? top.responsibleId ?? top.responsible_id ?? null,
+      responsibleKind: draft.responsible_kind ?? draft.responsibleKind ?? top.responsibleKind ?? top.responsible_kind ?? null,
+      responsibleLabel: draft.responsible_label ?? top.responsibleLabel ?? top.responsible_label ?? top.responsible ?? '',
       ampel: draft.ampel ?? top.ampel ?? 'gelb',
       responsible: draft.responsible?.trim() ?? top.responsible ?? '',
       status: nextStatus,
@@ -472,6 +479,9 @@ export function moveMeetingTop(tops, topId, targetParentId) {
           parentTopId: normalizedTargetParentId,
           level: nextLevel,
           number: nextNumber,
+          responsibleId: top.responsibleId ?? top.responsible_id ?? null,
+          responsibleKind: top.responsibleKind ?? top.responsible_kind ?? null,
+          responsibleLabel: top.responsibleLabel ?? top.responsible_label ?? top.responsible ?? '',
         }
       : top,
   );

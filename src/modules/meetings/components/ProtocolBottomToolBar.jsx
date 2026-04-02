@@ -1,37 +1,39 @@
 export default function ProtocolBottomToolBar({
-  tops,
-  selectedTop,
-  onStartRootCreate,
-  onStartChildCreate,
-  onStartSubChildCreate,
+  onStartTitleCreate,
+  onStartTopCreate,
+  canCreateTitle,
+  canCreateTop,
+  onToggleMove,
+  moveMode,
+  canMove,
 }) {
-  const canCreateTop = selectedTop && Number(selectedTop.level) < 4;
-  const canCreateUnder = selectedTop && Number(selectedTop.level) < 4;
-
   return (
-    <>
-      <button type="button" className="button button--toolbar button--sm" onClick={onStartRootCreate}>
+    <div className="protocol-bottom-toolbar">
+      <button
+        type="button"
+        className="button button--toolbar button--sm"
+        onClick={onStartTitleCreate}
+        disabled={!canCreateTitle}
+      >
         + Titel
       </button>
       <button
         type="button"
         className="button button--toolbar button--sm"
-        onClick={onStartChildCreate}
+        onClick={onStartTopCreate}
         disabled={!canCreateTop}
       >
         + TOP
       </button>
       <button
         type="button"
-        className="button button--toolbar button--sm"
-        onClick={onStartSubChildCreate}
-        disabled={!canCreateUnder}
+        className={`button button--toolbar button--sm${moveMode ? ' button--primary' : ''}`}
+        onClick={onToggleMove}
+        disabled={!canMove}
+        title="Schieben: Ziel durch Klick in Liste waehlen"
       >
-        + Unterpunkt
+        {moveMode ? 'Schieben (aktiv)' : 'Schieben'}
       </button>
-      <button type="button" className="button button--toolbar button--sm" disabled={!selectedTop}>
-        Schieben
-      </button>
-    </>
+    </div>
   );
 }

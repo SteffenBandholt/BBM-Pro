@@ -28,13 +28,14 @@ function ProtocolTopRow({ top, selectedTopId, onSelectTop, collapsedTopIds, onTo
   const trafficLightClass = `protocol-top-row__traffic-light${
     trafficLightTone ? ` protocol-top-row__traffic-light--${trafficLightTone}` : ''
   }`;
-  const rowClassName = isTitle
-    ? isSelected
-      ? 'protocol-top-row protocol-top-row--selected protocol-top-row--title'
-      : 'protocol-top-row protocol-top-row--title'
-    : isSelected
-      ? 'protocol-top-row protocol-top-row--selected'
-      : 'protocol-top-row';
+
+  const originClass = isTitle ? '' : top.isCarriedOver ? 'protocol-top-row--carried' : 'protocol-top-row--new';
+  const doneClass = !isTitle && top.status === 'erledigt' ? 'protocol-top-row--done' : '';
+
+  const baseClass = isTitle ? 'protocol-top-row protocol-top-row--title' : 'protocol-top-row';
+  const rowClassName = [baseClass, originClass, doneClass, isSelected ? 'protocol-top-row--selected' : '']
+    .filter(Boolean)
+    .join(' ');
 
   return (
     <li>
@@ -48,7 +49,7 @@ function ProtocolTopRow({ top, selectedTopId, onSelectTop, collapsedTopIds, onTo
               aria-expanded={!isCollapsed}
               aria-label={isCollapsed ? `Familie von ${top.displayNumber} aufklappen` : `Familie von ${top.displayNumber} zuklappen`}
             >
-              <span aria-hidden="true">{isCollapsed ? '▸' : '▾'}</span>
+              <span aria-hidden="true">{isCollapsed ? '>' : 'v'}</span>
             </button>
           ) : (
             <span className="protocol-top-row-toggle protocol-top-row-toggle--spacer" aria-hidden="true" />

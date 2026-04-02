@@ -1116,6 +1116,20 @@ a {
   background: #eef4fb;
   border-radius: 0.22rem;
 }
+.protocol-top-row--new .protocol-top-row__title,
+.protocol-top-row--new .protocol-top-row__number {
+  color: #0b4db4;
+}
+.protocol-top-row--carried .protocol-top-row__title,
+.protocol-top-row--carried .protocol-top-row__number {
+  color: #1f2937;
+}
+.protocol-top-row--done .protocol-top-row__title,
+.protocol-top-row--done .protocol-top-row__number,
+.protocol-top-row--done .protocol-top-row__text,
+.protocol-top-row--done .protocol-top-row__meta {
+  color: #6f7d90;
+}
 
 .protocol-top-row__number {
   font-weight: 700;
@@ -1184,6 +1198,9 @@ a {
 
 .protocol-top-row__traffic-light--red {
   background: #d64545;
+}
+.protocol-top-row__traffic-light--blue {
+  background: #1e3a8a;
 }
 
 .protocol-top-row__text {
@@ -1267,6 +1284,12 @@ a {
 
 .protocol-editor-panel__toolbar > .button {
   flex: 0 0 auto;
+}
+.protocol-editor-save-status {
+  font-size: 0.68rem;
+  color: #5a6a80;
+  min-width: 72px;
+  text-align: left;
 }
 
 .protocol-editor-fields {
@@ -1397,16 +1420,20 @@ a {
   background: #cbd5e1;
 }
 
-.protocol-editor-traffic-light--grün {
+.protocol-editor-traffic-light--green {
   background: #2e9b57;
 }
 
-.protocol-editor-traffic-light--gelb {
+.protocol-editor-traffic-light--yellow {
   background: #d8a200;
 }
 
-.protocol-editor-traffic-light--rot {
+.protocol-editor-traffic-light--red {
   background: #d64545;
+}
+
+.protocol-editor-traffic-light--blue {
+  background: #1e3a8a;
 }
 
 .protocol-editor-flags {

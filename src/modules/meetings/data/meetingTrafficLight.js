@@ -15,7 +15,9 @@ function getDaysUntil(dateValue) {
 export function normalizeMeetingStatusToFachStatus(status) {
   switch (status) {
     case 'neu':
+    case 'uebernommen':
     case 'übernommen':
+    case 'geaendert':
     case 'geändert':
       return 'offen';
     case 'erledigt':

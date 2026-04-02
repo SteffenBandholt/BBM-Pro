@@ -14,7 +14,7 @@ async function assertOpenMeeting(meetingId) {
 
 function ensureLevel(level) {
   const lv = Number(level);
-  if (!Number.isFinite(lv) || lv < 1 || lv > MAX_LEVEL) throw new Error("Ungültiges Level");
+  if (!Number.isFinite(lv) || lv < 1 || lv > MAX_LEVEL) throw new Error("Ungueltiges Level");
   return lv;
 }
 
@@ -30,7 +30,6 @@ export async function createTop({ projectId, meetingId, parentTopId = null, leve
   const meeting = await assertOpenMeeting(meetingId);
   if (String(meeting.project_id) !== String(projectId)) throw new Error("Project mismatch");
 
-  // Level ableiten falls Parent gesetzt
   let lvl = Number(level) || 1;
   if (parentTopId) {
     const parent = await topsRepo.getTopById(parentTopId);
@@ -38,13 +37,12 @@ export async function createTop({ projectId, meetingId, parentTopId = null, leve
     lvl = Number(parent.level || 1) + 1;
   }
   lvl = ensureLevel(lvl);
+  if (!parentTopId && lvl > 1) throw new Error("TOP braucht einen Titel als Parent");
   if (lvl === 1 && parentTopId) throw new Error("Root darf keinen Parent haben");
   if (lvl > MAX_LEVEL) throw new Error("Max Level 4 erreicht");
 
-  // Nummer bestimmen
   const number = await topsRepo.getNextNumber(projectId, parentTopId || null);
 
-  // Anlegen
   const created = await topsRepo.createTop({
     projectId,
     parentTopId: parentTopId || null,
@@ -53,7 +51,6 @@ export async function createTop({ projectId, meetingId, parentTopId = null, leve
     title,
   });
 
-  // Meeting-Bezug herstellen
   const todayIso = todayYmd();
   await meetingTopsRepo.attachTopToMeeting({
     meetingId,
@@ -73,14 +70,15 @@ export async function moveTop({ topId, targetParentId = null }) {
   const top = await topsRepo.getTopById(topId);
   if (!top) throw new Error("TOP nicht gefunden");
 
+  if (await topsRepo.hasChildren(topId)) throw new Error("TOP hat Unterpunkte");
+
   const openMeeting = await meetingsRepo.getOpenMeetingByProject(top.project_id);
-  if (!openMeeting) throw new Error("Kein offenes Meeting für dieses Projekt");
+  if (!openMeeting) throw new Error("Kein offenes Meeting fuer dieses Projekt");
 
   const mt = await meetingTopsRepo.getMeetingTop(openMeeting.id, topId);
-  if (!mt) throw new Error("TOP gehört nicht zum offenen Meeting");
-  if (Number(mt.is_carried_over) === 1) throw new Error("Übernommener TOP kann nicht verschoben werden");
+  if (!mt) throw new Error("TOP gehoert nicht zum offenen Meeting");
+  if (Number(mt.is_carried_over) === 1) throw new Error("Uebernommener TOP kann nicht verschoben werden");
 
-  // Zielvalidierung
   let newLevel = Number(top.level);
   if (targetParentId) {
     if (String(targetParentId) === String(topId)) throw new Error("Zielparent ist derselbe TOP");
@@ -90,11 +88,10 @@ export async function moveTop({ topId, targetParentId = null }) {
     }
     const parentLevel = Number(parent.level);
     if (!Number.isFinite(parentLevel) || parentLevel < 1 || parentLevel > 4) {
-      throw new Error("Ziel-Parent hat ungültiges Level");
+      throw new Error("Ziel-Parent hat ungueltiges Level");
     }
     if (parentLevel >= MAX_LEVEL) throw new Error("Maximale Tiefe erreicht (unter Level 4 nicht erlaubt)");
 
-    // Zyklus-Check
     let cur = parent;
     let guard = 0;
     while (cur && guard < 100) {
@@ -105,10 +102,9 @@ export async function moveTop({ topId, targetParentId = null }) {
     }
 
     newLevel = parentLevel + 1;
-    if (newLevel > MAX_LEVEL) throw new Error("Maximale Tiefe 4 überschritten");
+    if (newLevel > MAX_LEVEL) throw new Error("Maximale Tiefe 4 ueberschritten");
   } else {
-    // Root nur für Level-1
-    if (Number(top.level) !== 1) throw new Error("Nur Level-1 darf root sein");
+    if (Number(top.level) !== 1) throw new Error("Nur Titel (Level 1) duerfen Root sein");
     newLevel = 1;
   }
 
@@ -142,19 +138,20 @@ export async function updateMeetingFields({ meetingId, topId, patch }) {
   const isCarried = Number(mt.is_carried_over) === 1;
   const next = { ...patch };
 
-  // If status set to erledigt -> set due + completed
+  if (isCarried && patch.title !== undefined) {
+    throw new Error("Uebernommener TOP: Titel ist gesperrt");
+  }
+
   if (patch.status && String(patch.status).toLowerCase() === "erledigt") {
     next.status = "erledigt";
     next.dueDate = todayYmd();
     next.completed_in_meeting_id = meetingId;
   }
 
-  // Touch detection for carried-over TOPs
   if (isCarried && detectTouched(mt, next)) {
     next.is_touched = 1;
   }
 
-  // Title updates: forbid on carried-over? keep simple: allow, still sets touched.
   if (next.title !== undefined) {
     await topsRepo.updateTitle({ topId, title: next.title });
   }
@@ -162,7 +159,6 @@ export async function updateMeetingFields({ meetingId, topId, patch }) {
     await topsRepo.setHidden({ topId, isHidden: !!next.is_hidden });
   }
 
-  // Validate responsible firm (not applicable for titles)
   if (mt.level === 1) {
     next.responsible_kind = null;
     next.responsible_id = null;
@@ -186,24 +182,75 @@ export async function updateMeetingFields({ meetingId, topId, patch }) {
     }
   }
 
-  return meetingTopsRepo.updateMeetingTop({
+  const toDateString = (v) => {
+    if (v == null) return null;
+    if (v instanceof Date) return v.toISOString().slice(0, 10);
+    const s = String(v).trim();
+    return s === "" ? null : s;
+  };
+  const toInt = (v) => (v === undefined || v === null ? undefined : v ? 1 : 0);
+  const repoPatch = {
     meetingId,
     topId,
-    status: next.status,
-    dueDate: next.dueDate ?? patch.due_date,
-    longtext: next.longtext ?? patch.longtext,
-    completed_in_meeting_id: next.completed_in_meeting_id,
-    is_important: patch.is_important,
-    is_touched: next.is_touched,
-    is_task: patch.is_task,
-    is_decision: patch.is_decision,
-    responsible_kind: next.responsible_kind ?? mt.responsible_kind,
-    responsible_id: next.responsible_id ?? mt.responsible_id,
-    responsible_label: next.responsible_label ?? mt.responsible_label,
-    contact_kind: patch.contact_kind,
-    contact_person_id: patch.contact_person_id,
-    contact_label: patch.contact_label,
-  });
+  };
+
+  if (next.status !== undefined) {
+    repoPatch.status = next.status;
+  }
+
+  if (next.dueDate !== undefined || patch.due_date !== undefined) {
+    repoPatch.due_date = toDateString(next.dueDate ?? patch.due_date);
+  }
+
+  if (next.longtext !== undefined || patch.longtext !== undefined) {
+    repoPatch.longtext = next.longtext ?? patch.longtext ?? null;
+  }
+
+  if (next.completed_in_meeting_id !== undefined) {
+    repoPatch.completed_in_meeting_id = next.completed_in_meeting_id;
+  }
+
+  if (next.is_important !== undefined || patch.is_important !== undefined) {
+    repoPatch.is_important = toInt(next.is_important ?? patch.is_important);
+  }
+
+  if (next.is_touched !== undefined) {
+    repoPatch.is_touched = toInt(next.is_touched);
+  }
+
+  if (patch.is_task !== undefined) {
+    repoPatch.is_task = toInt(patch.is_task);
+  }
+
+  if (patch.is_decision !== undefined) {
+    repoPatch.is_decision = toInt(patch.is_decision);
+  }
+
+  if (
+    Number(mt.level) === 1 ||
+    patch.responsible_kind !== undefined ||
+    patch.responsible_id !== undefined ||
+    patch.responsible_label !== undefined ||
+    patch.responsibleKind !== undefined ||
+    patch.responsibleId !== undefined ||
+    patch.responsibleLabel !== undefined
+  ) {
+    repoPatch.responsible_kind = next.responsible_kind ?? null;
+    repoPatch.responsible_id = next.responsible_id ?? null;
+    repoPatch.responsible_label = next.responsible_label ?? null;
+  }
+
+  if (patch.contact_kind !== undefined) {
+    repoPatch.contact_kind = patch.contact_kind;
+  }
+  if (patch.contact_person_id !== undefined) {
+    repoPatch.contact_person_id = patch.contact_person_id;
+  }
+  if (patch.contact_label !== undefined) {
+    repoPatch.contact_label = patch.contact_label;
+  }
+
+  return meetingTopsRepo.updateMeetingTop(repoPatch);
 }
 
 export async function deleteTop({ meetingId, topId }) {
@@ -213,12 +260,12 @@ export async function deleteTop({ meetingId, topId }) {
   const meeting = await assertOpenMeeting(meetingId);
   const mt = await meetingTopsRepo.getMeetingTop(meetingId, topId);
   if (!mt) throw new Error("TOP ist nicht Teil dieser Besprechung");
-  if (Number(mt.is_carried_over) === 1) throw new Error("Übernommener TOP kann nicht gelöscht werden");
+  if (Number(mt.is_carried_over) === 1) throw new Error("Uebernommener TOP kann nicht geloescht werden");
 
   const top = await topsRepo.getTopById(topId);
   if (!top) throw new Error("TOP nicht gefunden");
   if (String(top.project_id) !== String(meeting.project_id)) {
-    throw new Error("TOP gehört zu anderem Projekt");
+    throw new Error("TOP gehoert zu anderem Projekt");
   }
 
   if (await topsRepo.hasChildren(topId)) throw new Error("TOP hat Unterpunkte");
