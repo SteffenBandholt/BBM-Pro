@@ -107,13 +107,13 @@ const MIGRATIONS = [
     CREATE TABLE IF NOT EXISTS meeting_participants (
       meeting_id TEXT NOT NULL,
       kind TEXT NOT NULL, -- "firm" | "project_person"
-      firm_id TEXT,
-      person_id TEXT,
+      firm_id TEXT NOT NULL DEFAULT '',
+      person_id TEXT NOT NULL DEFAULT '',
       is_present INTEGER NOT NULL DEFAULT 0,
       is_in_distribution INTEGER NOT NULL DEFAULT 0,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL,
-      PRIMARY KEY (meeting_id, kind, COALESCE(firm_id, person_id)),
+      PRIMARY KEY (meeting_id, kind, firm_id, person_id),
       FOREIGN KEY (meeting_id) REFERENCES meetings(id) ON DELETE CASCADE,
       FOREIGN KEY (firm_id) REFERENCES project_firms(id) ON DELETE CASCADE,
       FOREIGN KEY (person_id) REFERENCES project_persons(id) ON DELETE CASCADE

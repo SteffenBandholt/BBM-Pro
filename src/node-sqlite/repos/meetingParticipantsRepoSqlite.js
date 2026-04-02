@@ -14,7 +14,9 @@ export function setMeetingParticipant({ meetingId, firmId = null, personId = nul
   const db = getDb();
   const now = nowIso();
   const kind = firmId ? "firm" : "project_person";
-  const keyId = firmId ?? personId;
+  const keyId = firmId ?? personId ?? "";
+  const firmVal = firmId ?? "";
+  const personVal = personId ?? "";
   const existing = db
     .prepare(
       `SELECT * FROM meeting_participants WHERE meeting_id = ? AND kind = ? AND COALESCE(firm_id, person_id) = ?`,
@@ -28,7 +30,7 @@ export function setMeetingParticipant({ meetingId, firmId = null, personId = nul
     db.prepare(
       `INSERT INTO meeting_participants (meeting_id, kind, firm_id, person_id, is_present, is_in_distribution, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    ).run(meetingId, kind, firmId, personId, is_present ? 1 : 0, is_in_distribution ? 1 : 0, now, now);
+    ).run(meetingId, kind, firmVal, personVal, is_present ? 1 : 0, is_in_distribution ? 1 : 0, now, now);
   }
   return { ok: true };
 }
