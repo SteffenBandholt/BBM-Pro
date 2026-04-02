@@ -144,7 +144,8 @@ export function listJoinedByMeeting(meetingId) {
       FROM meeting_tops mt
       JOIN tops t ON t.id = mt.top_id
       WHERE mt.meeting_id = ?
-      AND (t.removed_at IS NULL)`
+      AND (t.removed_at IS NULL)
+      AND (t.is_trashed = 0)`
     )
     .all(meetingId);
 }

@@ -148,6 +148,7 @@ export default function MeetingDetailPage() {
 
   const startCreateChildTop = () => {
     if (!selectedTop) return;
+    if (Number(selectedTop.level) >= 4) return;
     setEditorMode('create-child');
     setEditorDraft({
       title: '',
@@ -189,15 +190,29 @@ export default function MeetingDetailPage() {
           },
         });
       } else {
-        const parentTopId = editorMode === 'create-child' ? selectedTop?.id ?? null : null;
         if (!meeting.project_id) return;
-        await createTopSvc({
-          projectId: meeting.project_id,
-          meetingId,
-          parentTopId,
-          level: editorDraft.level || (parentTopId ? (selectedTop?.level || 1) + 1 : 1),
-          title: editorDraft.title.trim(),
-        });
+
+        if (editorMode === 'create-root') {
+          const created = await createTopSvc({
+            projectId: meeting.project_id,
+            meetingId,
+            parentTopId: null,
+            level: 1,
+            title: editorDraft.title.trim(),
+          });
+          if (created?.id) setSelectedTopId(created.id);
+        } else if (editorMode === 'create-child') {
+          if (!selectedTop) return;
+          const level = Math.min(4, (Number(selectedTop.level) || 1) + 1);
+          const created = await createTopSvc({
+            projectId: meeting.project_id,
+            meetingId,
+            parentTopId: selectedTop.id,
+            level,
+            title: editorDraft.title.trim(),
+          });
+          if (created?.id) setSelectedTopId(created.id);
+        }
       }
       await reloadTops();
       setEditorMode('edit');

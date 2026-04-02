@@ -17,7 +17,12 @@ export function getNextNumber(projectId, parentTopId) {
   const db = getDb();
   const row = db
     .prepare(
-      `SELECT COALESCE(MAX(number),0)+1 AS next FROM tops WHERE project_id = ? AND parent_top_id IS ? AND removed_at IS NULL`,
+      `SELECT COALESCE(MAX(number),0)+1 AS next
+       FROM tops
+       WHERE project_id = ?
+       AND parent_top_id IS ?
+       AND removed_at IS NULL
+       AND is_trashed = 0`,
     )
     .get(projectId, parentTopId ?? null);
   return row.next;

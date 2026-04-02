@@ -7,14 +7,14 @@ const MAX_LEVEL = 4;
 
 async function assertOpenMeeting(meetingId) {
   const meeting = await meetingsRepo.getMeetingById(meetingId);
-  if (!meeting) throw new Error("Meeting not found");
-  if (meeting.is_closed) throw new Error("Meeting is closed");
+  if (!meeting) throw new Error("Besprechung nicht gefunden");
+  if (meeting.is_closed) throw new Error("Besprechung ist geschlossen");
   return meeting;
 }
 
 function ensureLevel(level) {
   const lv = Number(level);
-  if (!Number.isFinite(lv) || lv < 1 || lv > MAX_LEVEL) throw new Error("Invalid level");
+  if (!Number.isFinite(lv) || lv < 1 || lv > MAX_LEVEL) throw new Error("Ungültiges Level");
   return lv;
 }
 
@@ -23,64 +23,102 @@ export async function listByMeeting(meetingId) {
 }
 
 export async function createTop({ projectId, meetingId, parentTopId = null, level, title }) {
+  if (!projectId) throw new Error("projectId required");
+  if (!meetingId) throw new Error("meetingId required");
+  if (!title) throw new Error("title required");
+
   const meeting = await assertOpenMeeting(meetingId);
   if (String(meeting.project_id) !== String(projectId)) throw new Error("Project mismatch");
-  const lvl = ensureLevel(level);
-  if (lvl > 1 && !parentTopId) throw new Error("Parent required for non-root");
-  if (lvl === 1 && parentTopId) throw new Error("Root must not have parent");
-  if (lvl > MAX_LEVEL) throw new Error("Max level exceeded");
 
+  // Level ableiten falls Parent gesetzt
+  let lvl = Number(level) || 1;
   if (parentTopId) {
     const parent = await topsRepo.getTopById(parentTopId);
     if (!parent || String(parent.project_id) !== String(projectId)) throw new Error("Parent not found");
-    if (Number(parent.level) !== lvl - 1) throw new Error("Parent level mismatch");
+    lvl = Number(parent.level || 1) + 1;
   }
+  lvl = ensureLevel(lvl);
+  if (lvl === 1 && parentTopId) throw new Error("Root darf keinen Parent haben");
+  if (lvl > MAX_LEVEL) throw new Error("Max Level 4 erreicht");
 
+  // Nummer bestimmen
   const number = await topsRepo.getNextNumber(projectId, parentTopId || null);
-  const created = await topsRepo.createTop({ projectId, parentTopId, level: lvl, number, title });
+
+  // Anlegen
+  const created = await topsRepo.createTop({
+    projectId,
+    parentTopId: parentTopId || null,
+    level: lvl,
+    number,
+    title,
+  });
+
+  // Meeting-Bezug herstellen
+  const todayIso = todayYmd();
   await meetingTopsRepo.attachTopToMeeting({
     meetingId,
     topId: created.id,
     status: "offen",
-    dueDate: todayYmd(),
+    dueDate: lvl === 1 ? null : todayIso,
+    longtext: null,
     isCarriedOver: false,
   });
+
   return created;
 }
 
 export async function moveTop({ topId, targetParentId = null }) {
+  if (!topId) throw new Error("topId required");
+
   const top = await topsRepo.getTopById(topId);
-  if (!top) throw new Error("TOP not found");
+  if (!top) throw new Error("TOP nicht gefunden");
 
   const openMeeting = await meetingsRepo.getOpenMeetingByProject(top.project_id);
-  if (!openMeeting) throw new Error("No open meeting for project");
-  const mt = await meetingTopsRepo.getMeetingTop(openMeeting.id, topId);
-  if (!mt) throw new Error("TOP not in open meeting");
-  if (mt.is_carried_over) throw new Error("Carried TOP cannot move");
+  if (!openMeeting) throw new Error("Kein offenes Meeting für dieses Projekt");
 
+  const mt = await meetingTopsRepo.getMeetingTop(openMeeting.id, topId);
+  if (!mt) throw new Error("TOP gehört nicht zum offenen Meeting");
+  if (Number(mt.is_carried_over) === 1) throw new Error("Übernommener TOP kann nicht verschoben werden");
+
+  // Zielvalidierung
+  let newLevel = Number(top.level);
   if (targetParentId) {
-    if (String(targetParentId) === String(topId)) throw new Error("Cannot move under itself");
+    if (String(targetParentId) === String(topId)) throw new Error("Zielparent ist derselbe TOP");
     const parent = await topsRepo.getTopById(targetParentId);
-    if (!parent || String(parent.project_id) !== String(top.project_id))
-      throw new Error("Target parent missing or different project");
-    if (Number(parent.level) >= MAX_LEVEL) throw new Error("Target too deep");
-    // cycle guard
+    if (!parent || String(parent.project_id) !== String(top.project_id)) {
+      throw new Error("Ziel-Parent fehlt oder anderes Projekt");
+    }
+    const parentLevel = Number(parent.level);
+    if (!Number.isFinite(parentLevel) || parentLevel < 1 || parentLevel > 4) {
+      throw new Error("Ziel-Parent hat ungültiges Level");
+    }
+    if (parentLevel >= MAX_LEVEL) throw new Error("Maximale Tiefe erreicht (unter Level 4 nicht erlaubt)");
+
+    // Zyklus-Check
     let cur = parent;
     let guard = 0;
     while (cur && guard < 100) {
-      if (String(cur.id) === String(topId)) throw new Error("Cycle not allowed");
+      if (String(cur.id) === String(topId)) throw new Error("Zyklus nicht erlaubt");
       if (!cur.parent_top_id) break;
       cur = await topsRepo.getTopById(cur.parent_top_id);
       guard += 1;
     }
-  } else if (Number(top.level) !== 1) {
-    throw new Error("Only level-1 may be root");
+
+    newLevel = parentLevel + 1;
+    if (newLevel > MAX_LEVEL) throw new Error("Maximale Tiefe 4 überschritten");
+  } else {
+    // Root nur für Level-1
+    if (Number(top.level) !== 1) throw new Error("Nur Level-1 darf root sein");
+    newLevel = 1;
   }
 
-  const newParent = targetParentId ? await topsRepo.getTopById(targetParentId) : null;
-  const newLevel = targetParentId ? ((newParent?.level || 0) + 1) : 1;
   const newNumber = await topsRepo.getNextNumber(top.project_id, targetParentId || null);
-  return topsRepo.moveTop({ topId, targetParentId, newLevel, newNumber });
+  return topsRepo.moveTop({
+    topId,
+    targetParentId: targetParentId || null,
+    newLevel,
+    newNumber,
+  });
 }
 
 function detectTouched(prev, patch) {
@@ -124,8 +162,12 @@ export async function updateMeetingFields({ meetingId, topId, patch }) {
     await topsRepo.setHidden({ topId, isHidden: !!next.is_hidden });
   }
 
-  // Validate responsible firm
-  if (patch.responsible_kind !== undefined || patch.responsible_id !== undefined || patch.responsible_label !== undefined) {
+  // Validate responsible firm (not applicable for titles)
+  if (mt.level === 1) {
+    next.responsible_kind = null;
+    next.responsible_id = null;
+    next.responsible_label = null;
+  } else if (patch.responsible_kind !== undefined || patch.responsible_id !== undefined || patch.responsible_label !== undefined) {
     const kind = patch.responsible_kind ?? patch.responsibleKind ?? mt.responsible_kind ?? null;
     const responsibleId = patch.responsible_id ?? patch.responsibleId ?? mt.responsible_id ?? null;
     if (kind === null) {
@@ -165,11 +207,25 @@ export async function updateMeetingFields({ meetingId, topId, patch }) {
 }
 
 export async function deleteTop({ meetingId, topId }) {
-  await assertOpenMeeting(meetingId);
+  if (!meetingId) throw new Error("meetingId required");
+  if (!topId) throw new Error("topId required");
+
+  const meeting = await assertOpenMeeting(meetingId);
   const mt = await meetingTopsRepo.getMeetingTop(meetingId, topId);
-  if (!mt) throw new Error("TOP not in meeting");
-  if (Number(mt.is_carried_over) === 1) throw new Error("Carried TOP cannot be deleted");
-  if (await topsRepo.hasChildren(topId)) throw new Error("TOP has children");
-  await meetingTopsRepo.deleteByTopId(topId);
-  return topsRepo.softDeleteTop({ topId });
+  if (!mt) throw new Error("TOP ist nicht Teil dieser Besprechung");
+  if (Number(mt.is_carried_over) === 1) throw new Error("Übernommener TOP kann nicht gelöscht werden");
+
+  const top = await topsRepo.getTopById(topId);
+  if (!top) throw new Error("TOP nicht gefunden");
+  if (String(top.project_id) !== String(meeting.project_id)) {
+    throw new Error("TOP gehört zu anderem Projekt");
+  }
+
+  if (await topsRepo.hasChildren(topId)) throw new Error("TOP hat Unterpunkte");
+
+  await topsRepo.softDeleteTop({ topId });
+  if (typeof meetingTopsRepo.deleteByTopId === "function") {
+    await meetingTopsRepo.deleteByTopId(topId);
+  }
+  return { topId };
 }

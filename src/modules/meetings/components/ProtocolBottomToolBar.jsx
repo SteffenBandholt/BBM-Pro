@@ -4,12 +4,14 @@ export default function ProtocolBottomToolBar({
   onStartRootCreate,
   onStartChildCreate,
 }) {
+  const canCreateTop = selectedTop && Number(selectedTop.level) < 4;
+
   return (
     <>
-      <button type="button" className="button button--toolbar button--sm" onClick={onStartRootCreate} disabled={!selectedTop}>
+      <button type="button" className="button button--toolbar button--sm" onClick={onStartRootCreate}>
         + Titel
       </button>
-      <button type="button" className="button button--toolbar button--sm" onClick={onStartChildCreate} disabled={!selectedTop}>
+      <button type="button" className="button button--toolbar button--sm" onClick={onStartChildCreate} disabled={!canCreateTop}>
         + TOP
       </button>
       <button type="button" className="button button--toolbar button--sm" disabled={!selectedTop}>
