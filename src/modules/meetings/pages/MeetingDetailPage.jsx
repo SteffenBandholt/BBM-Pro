@@ -83,13 +83,20 @@ export default function MeetingDetailPage() {
 
   useEffect(() => {
     const load = async () => {
-      const m = await getMeeting(meetingId);
-      if (m) {
-        setMeeting({ id: m.id, isClosed: !!m.is_closed, project_id: m.project_id });
-        await loadFirmsAndParticipants(m.project_id);
+      try {
+        const m = await getMeeting(meetingId);
+        if (m) {
+          setMeeting({ id: m.id, isClosed: !!m.is_closed, project_id: m.project_id });
+          await loadFirmsAndParticipants(m.project_id);
+          const rows = await listMeetingTops(meetingId);
+          setTops(rows.map(mapRowToUi));
+        } else {
+          setTops([]);
+        }
+      } catch (err) {
+        console.error('[meeting] load failed', err);
+        setTops([]);
       }
-      const rows = await listMeetingTops(meetingId);
-      setTops(rows.map(mapRowToUi));
     };
     load();
   }, [meetingId]);
