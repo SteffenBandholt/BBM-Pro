@@ -1,23 +1,11 @@
 export default function LastProjectPanel({
   project,
   onOpenProject,
-  onGoToProjects,
   onCreateProject,
 }) {
   return (
     <section className="dashboard-section last-project-panel">
-      <div className="last-project-panel__intro">
-        <div>
-          <p className="last-project-panel__eyebrow">Weiterarbeiten</p>
-          <h2>Letztes Projekt oeffnen</h2>
-          <p className="last-project-panel__description">
-            Der haeufigste Einstieg bleibt das Projekt, in dem du zuletzt gearbeitet hast.
-          </p>
-        </div>
-        <button type="button" className="button button--secondary" onClick={onGoToProjects}>
-          Projektuebersicht
-        </button>
-      </div>
+      <h2>Weiterarbeiten</h2>
 
       {project ? (
         <button
@@ -26,14 +14,19 @@ export default function LastProjectPanel({
           onClick={() => onOpenProject(project)}
         >
           <span className="last-project-panel__label">
-            {project.isRemembered ? 'Zuletzt geoeffnet' : 'Empfohlener Einstieg'}
+            {project.isRemembered ? 'Zuletzt geoeffnet' : 'Weiter im Projekt'}
           </span>
           <span className="last-project-panel__title">{project.name}</span>
-          <span className="last-project-panel__meta">{project.metaLine}</span>
-          <span className="last-project-panel__details">
-            <span>Letzte Aktivitaet: {project.lastActivityLabel || 'noch offen'}</span>
-            <span>{project.latestMeetingLabel}</span>
-          </span>
+          {project.metaLine ? (
+            <span className="last-project-panel__meta">{project.metaLine}</span>
+          ) : null}
+          {project.lastActivityLabel || project.latestMeetingLabel ? (
+            <span className="last-project-panel__details">
+              {project.lastActivityLabel
+                ? `Letzte Aktivitaet: ${project.lastActivityLabel}`
+                : project.latestMeetingLabel}
+            </span>
+          ) : null}
         </button>
       ) : (
         <div className="last-project-panel__empty">

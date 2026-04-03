@@ -9,7 +9,7 @@ export default function ActionLinksPanel({ title, description, actions }) {
     <section className="dashboard-section action-links-panel">
       <div>
         <h2>{title}</h2>
-        <p className="action-links-panel__description">{description}</p>
+        {description ? <p className="action-links-panel__description">{description}</p> : null}
       </div>
 
       <div className="action-links-panel__list">
