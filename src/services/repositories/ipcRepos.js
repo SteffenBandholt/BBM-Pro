@@ -63,7 +63,13 @@ export const projectFirmsRepo = {
   listByProject: (projectId) => invoke("db:firms:list", { projectId }),
   getById: (firmId) => invoke("db:firms:get", { firmId }),
   createFirm: (p) => invoke("db:firms:create", p),
-  ensureSampleFirms: (projectId) => invoke("db:firms:ensureSample", { projectId }),
+  removeFirm: (firmId) => invoke("db:firms:remove", { firmId }),
+};
+
+export const globalFirmsRepo = {
+  listFirms: () => invoke("db:globalFirms:list"),
+  getById: (firmId) => invoke("db:globalFirms:get", { firmId }),
+  createFirm: (p) => invoke("db:globalFirms:create", p),
 };
 
 export const projectPersonsRepo = {

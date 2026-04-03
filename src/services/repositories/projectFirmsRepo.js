@@ -16,7 +16,7 @@ export function getById(firmId) {
   return firms.find((f) => String(f.id) === String(firmId) && !f.removed_at) || null;
 }
 
-export function createFirm({ projectId, name, shortLabel = "" }) {
+export function createFirm({ projectId, name, shortLabel = "", globalFirmId = null }) {
   const db = readDb();
   const now = nowIso();
   const firm = {
@@ -24,19 +24,38 @@ export function createFirm({ projectId, name, shortLabel = "" }) {
     project_id: projectId,
     name: name?.trim() || "Firma",
     short_label: shortLabel?.trim() || name?.trim() || "Firma",
+    global_firm_id: globalFirmId || null,
     removed_at: null,
     created_at: now,
     updated_at: now,
   };
-  db.projectFirms = [...db.projectFirms, firm];
+  db.projectFirms = [...(db.projectFirms || []), firm];
   writeDb(db);
   return firm;
 }
 
-export function ensureSampleFirms(projectId) {
-  const existing = listByProject(projectId);
-  if (existing.length > 0) return existing;
-  createFirm({ projectId, name: "Musterbau GmbH", shortLabel: "Musterbau" });
-  createFirm({ projectId, name: "Planung AG", shortLabel: "Planung" });
-  return listByProject(projectId);
+export function removeFirm(firmId) {
+  const db = readDb();
+  const now = nowIso();
+  let updatedFirm = null;
+
+  db.projectFirms = (db.projectFirms || []).map((firm) => {
+    if (String(firm.id) !== String(firmId) || firm.removed_at) {
+      return firm;
+    }
+
+    updatedFirm = {
+      ...firm,
+      removed_at: now,
+      updated_at: now,
+    };
+    return updatedFirm;
+  });
+
+  if (!updatedFirm) {
+    throw new Error("Projektfirma wurde nicht gefunden.");
+  }
+
+  writeDb(db);
+  return updatedFirm;
 }

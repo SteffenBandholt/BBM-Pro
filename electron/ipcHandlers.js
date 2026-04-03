@@ -3,6 +3,7 @@ import {
   meetingsRepo,
   topsRepo,
   meetingTopsRepo,
+  globalFirmsRepo,
   projectFirmsRepo,
   projectPersonsRepo,
   meetingParticipantsRepo,
@@ -48,10 +49,14 @@ export function registerDbIpcHandlers(ipcMain) {
     meetingTopsRepo.carryOverFromMeeting(p.fromMeetingId, p.toMeetingId, { skipIds: new Set(p.skipIds || []) })));
   ipcMain.handle('db:meetingTops:get', wrap((p) => meetingTopsRepo.getMeetingTop(p.meetingId, p.topId)));
 
+  ipcMain.handle('db:globalFirms:list', wrap(() => globalFirmsRepo.listFirms()));
+  ipcMain.handle('db:globalFirms:get', wrap((p) => globalFirmsRepo.getById(p.firmId)));
+  ipcMain.handle('db:globalFirms:create', wrap((p) => globalFirmsRepo.createFirm(p)));
+
   ipcMain.handle('db:firms:list', wrap((p) => projectFirmsRepo.listByProject(p.projectId)));
   ipcMain.handle('db:firms:get', wrap((p) => projectFirmsRepo.getById(p.firmId)));
   ipcMain.handle('db:firms:create', wrap((p) => projectFirmsRepo.createFirm(p)));
-  ipcMain.handle('db:firms:ensureSample', wrap((p) => projectFirmsRepo.ensureSampleFirms(p.projectId)));
+  ipcMain.handle('db:firms:remove', wrap((p) => projectFirmsRepo.removeFirm(p.firmId)));
 
   ipcMain.handle('db:persons:list', wrap((p) => projectPersonsRepo.listByProject(p.projectId)));
 

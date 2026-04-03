@@ -1,8 +1,12 @@
 import { getDb } from "./client.js";
 
+function getTableColumns(db, tableName) {
+  return db.prepare(`PRAGMA table_info(${tableName})`).all();
+}
+
 function getTableColumnNames(db, tableName) {
   return new Set(
-    db.prepare(`PRAGMA table_info(${tableName})`).all().map((column) => column.name),
+    getTableColumns(db, tableName).map((column) => column.name),
   );
 }
 
@@ -36,6 +40,25 @@ function ensureProjectsMetadataColumns(db) {
         start_date = COALESCE(start_date, ''),
         end_date = COALESCE(end_date, '');
   `);
+}
+
+function ensureFirmFlowTables(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS global_firms (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      short_label TEXT,
+      removed_at TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+  `);
+
+  const projectFirmColumns = getTableColumnNames(db, "project_firms");
+
+  if (!projectFirmColumns.has("global_firm_id")) {
+    db.exec("ALTER TABLE project_firms ADD COLUMN global_firm_id TEXT");
+  }
 }
 
 // Minimal schema for Protokoll-Modul (projects, meetings, tops, meeting_tops, project_firms, project_persons, meeting_participants)
@@ -176,6 +199,11 @@ const MIGRATIONS = [
     id: 3,
     name: "projects-metadata-fields",
     run: ensureProjectsMetadataColumns,
+  },
+  {
+    id: 4,
+    name: "firms-flow",
+    run: ensureFirmFlowTables,
   },
 ];
 

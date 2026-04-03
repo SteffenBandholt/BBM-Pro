@@ -2,7 +2,7 @@ import { getRepos } from "../repositories/index.js";
 import { todayYmd } from "../utils/time.js";
 import * as participantService from "./participantService.js";
 
-const { meetingsRepo, meetingTopsRepo, topsRepo, projectFirmsRepo } = getRepos();
+const { meetingsRepo, meetingTopsRepo, topsRepo } = getRepos();
 
 function buildDisplayNumbers(rows) {
   const byId = new Map(rows.map((r) => [String(r.id), r]));
@@ -99,10 +99,7 @@ export async function createMeeting({ projectId, title, date, protocolLabel }) {
     await carryOverFromMeeting(lastClosed.id, meeting.id);
   }
 
-  // Seed participants from project firms
-  if (projectFirmsRepo.ensureSampleFirms) {
-    await projectFirmsRepo.ensureSampleFirms(projectId);
-  }
+  // Seed participants from existing project firms.
   await participantService.seedParticipantsFromProject(meeting.id, projectId);
 
   return meeting;

@@ -9,6 +9,7 @@ function defaultDb() {
     meetings: [],
     tops: [],
     meetingTops: [],
+    globalFirms: [],
     projectFirms: [],
     projectPersons: [],
     meetingParticipants: [],
@@ -33,6 +34,10 @@ function readRaw() {
       meetings: parsed.meetings ?? [],
       tops: parsed.tops ?? [],
       meetingTops: parsed.meetingTops ?? [],
+      globalFirms: parsed.globalFirms ?? [],
+      projectFirms: parsed.projectFirms ?? [],
+      projectPersons: parsed.projectPersons ?? [],
+      meetingParticipants: parsed.meetingParticipants ?? [],
     };
     return cache;
   } catch (_err) {
@@ -55,6 +60,10 @@ export function readDb() {
     meetings: [...db.meetings],
     tops: [...db.tops],
     meetingTops: [...db.meetingTops],
+    globalFirms: [...db.globalFirms],
+    projectFirms: [...db.projectFirms],
+    projectPersons: [...db.projectPersons],
+    meetingParticipants: [...db.meetingParticipants],
   };
 }
 
