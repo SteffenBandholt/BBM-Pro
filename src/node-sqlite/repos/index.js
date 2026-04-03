@@ -5,5 +5,6 @@ export * as meetingTopsRepo from "./meetingTopsRepoSqlite.js";
 export * as globalFirmsRepo from "./globalFirmsRepoSqlite.js";
 export * as globalFirmEmployeesRepo from "./globalFirmEmployeesRepoSqlite.js";
 export * as projectFirmsRepo from "./projectFirmsRepoSqlite.js";
+export * as projectFirmEmployeesRepo from "./projectFirmEmployeesRepoSqlite.js";
 export * as projectPersonsRepo from "./projectPersonsRepoSqlite.js";
 export * as meetingParticipantsRepo from "./meetingParticipantsRepoSqlite.js";

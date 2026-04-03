@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import { useProjectParticipants } from '../hooks/useProjectParticipants.js';
 import { listFirms } from '../../firms/services/firmsService.js';
 
 export default function ProjectParticipantsPage() {
+  const { projectId } = useParams();
   const {
     firms,
     selectedFirm,
@@ -10,14 +12,13 @@ export default function ProjectParticipantsPage() {
     loading,
     error,
     createProjectFirm,
-    addEmployeeToProjectFirm,
     assignGlobalFirm,
     removeFirmFromProject,
-  } = useProjectParticipants();
+    activateEmployeeForProject,
+    deactivateEmployeeForProject,
+  } = useProjectParticipants(projectId);
   const [mode, setMode] = useState(null);
   const [newFirmName, setNewFirmName] = useState('');
-  const [newEmployeeName, setNewEmployeeName] = useState('');
-  const [newEmployeeRole, setNewEmployeeRole] = useState('');
   const [globalFirms, setGlobalFirms] = useState([]);
 
   useEffect(() => {
@@ -29,12 +30,12 @@ export default function ProjectParticipantsPage() {
         if (isActive) {
           setGlobalFirms(items);
         }
-      } catch {
-        // optional: kein Fehlerhandling notwendig für diesen Schritt
+      } catch (err) {
+        console.error('[project-participants] global firms load failed', err);
       }
     };
 
-    loadGlobalFirms();
+    void loadGlobalFirms();
 
     return () => {
       isActive = false;
@@ -43,41 +44,47 @@ export default function ProjectParticipantsPage() {
 
   return (
     <section className="project-participants">
-      <h1>Projektbeteiligte</h1>
+      <h1>Firmen im Projekt</h1>
 
       <div className="project-participants__actions">
         <button type="button" className="button" onClick={() => setMode('assign')}>
           Firma zuordnen
         </button>
         <button type="button" className="button button--secondary" onClick={() => setMode('create')}>
-          Firma mit Mitarbeitern anlegen
+          Projektfirma anlegen
         </button>
       </div>
 
       {mode === 'assign' ? (
         <section className="project-participants__panel">
-          <h2>Globale Firma auswählen</h2>
-          <ul className="project-participants__list">
-            {globalFirms.map((firm) => (
-              <li key={firm.id}>
-                <button
-                  type="button"
-                  className="project-participants__firm-button"
-                  onClick={() => {
-                    assignGlobalFirm(firm);
-                    setMode(null);
-                  }}
-                >
-                  <span className="project-participants__firm-name">{firm.name}</span>
-                  <span className="project-participants__firm-meta">
-                    Global · {firm.employees.length} Mitarbeiter
-                  </span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          <h2>Globale Firma auswaehlen</h2>
+          {globalFirms.length === 0 ? (
+            <p>Es sind noch keine globalen Firmen vorhanden.</p>
+          ) : (
+            <ul className="project-participants__list">
+              {globalFirms.map((firm) => (
+                <li key={firm.id}>
+                  <button
+                    type="button"
+                    className="project-participants__firm-button"
+                    onClick={async () => {
+                      const assigned = await assignGlobalFirm(firm);
+                      if (assigned) {
+                        setMode(null);
+                      }
+                    }}
+                  >
+                    <span className="project-participants__firm-name">{firm.name}</span>
+                    <span className="project-participants__firm-meta">
+                      {firm.employees?.length ? `${firm.employees.length} Firmenmitarbeiter` : 'Noch keine Firmenmitarbeiter'}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
           <button type="button" className="button button--secondary" onClick={() => setMode(null)}>
-            Schließen
+            Schliessen
           </button>
         </section>
       ) : null}
@@ -90,7 +97,7 @@ export default function ProjectParticipantsPage() {
             <span>Firmenname</span>
             <input
               value={newFirmName}
-              onChange={(e) => setNewFirmName(e.target.value)}
+              onChange={(event) => setNewFirmName(event.target.value)}
               placeholder="Name der Firma"
             />
           </label>
@@ -99,11 +106,14 @@ export default function ProjectParticipantsPage() {
             <button
               type="button"
               className="button"
-              onClick={() => {
-                if (!newFirmName.trim()) return;
-                createProjectFirm(newFirmName.trim());
-                setNewFirmName('');
-                setMode(null);
+              onClick={async () => {
+                const trimmedName = newFirmName.trim();
+                if (!trimmedName) return;
+                const created = await createProjectFirm(trimmedName);
+                if (created) {
+                  setNewFirmName('');
+                  setMode(null);
+                }
               }}
             >
               Anlegen
@@ -115,126 +125,143 @@ export default function ProjectParticipantsPage() {
         </section>
       ) : null}
 
-      {loading ? <p>Lade Projektbeteiligte ...</p> : null}
+      {loading ? <p>Lade Firmen ...</p> : null}
       {error ? <p className="form-error">{error}</p> : null}
 
       {!loading && !error ? (
         <div className="project-participants__layout">
           <section className="project-participants__panel">
             <h2>Firmen im Projekt</h2>
-            <ul className="project-participants__list">
-              {firms.map((firm) => (
-                <li key={firm.id}>
-                  <button
-                    type="button"
-                    className={
-                      selectedFirm?.id === firm.id
-                        ? 'project-participants__firm-button project-participants__firm-button--active'
-                        : 'project-participants__firm-button'
-                    }
-                    onClick={() => setSelectedFirm(firm)}
-                  >
-                    <span className="project-participants__firm-name">{firm.name}</span>
-                    <span className="project-participants__firm-meta">
-                      {firm.type === 'global' ? 'Global' : 'Projektfirma'} · {firm.employees.length} Mitarbeiter
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
+            {firms.length === 0 ? (
+              <p>Noch keine Firmen im Projekt.</p>
+            ) : (
+              <ul className="project-participants__list">
+                {firms.map((firm) => (
+                  <li key={firm.id}>
+                    <button
+                      type="button"
+                      className={
+                        selectedFirm?.id === firm.id
+                          ? 'project-participants__firm-button project-participants__firm-button--active'
+                          : 'project-participants__firm-button'
+                      }
+                      onClick={() => setSelectedFirm(firm)}
+                    >
+                      <span className="project-participants__firm-name">{firm.name}</span>
+                      <span className="project-participants__firm-meta">
+                        {firm.activeEmployees?.length || 0} Mitarbeiter im Projekt aktiv
+                      </span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
           </section>
 
           <section className="project-participants__panel">
             <h2>Details</h2>
             {!selectedFirm ? (
-              <p>Bitte wählen Sie links eine Firma aus.</p>
+              <p>Bitte waehlen Sie links eine Firma aus.</p>
             ) : (
               <>
                 <div className="project-participants__card">
                   <p className="project-participants__label">Visitenkarte</p>
                   <p className="project-participants__card-title">{selectedFirm.name}</p>
                   <span className="project-participants__badge">
-                    {selectedFirm.type === 'global' ? 'Global' : 'Projektfirma'}
+                    {selectedFirm.type === 'global' ? 'Aus Stammdaten' : 'Projektfirma'}
                   </span>
-                  <p className="project-participants__card-placeholder">Adresse: -</p>
-                  <p className="project-participants__card-placeholder">Kontakt: -</p>
                 </div>
 
                 <div className="project-participants__actions">
-                  {selectedFirm.type === 'project' ? (
-                    <button
-                      type="button"
-                      className="button button--secondary"
-                      onClick={() => removeFirmFromProject(selectedFirm.id)}
-                    >
-                      Projektfirma löschen
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="button button--secondary"
-                      onClick={() => removeFirmFromProject(selectedFirm.id)}
-                    >
-                      Aus Projekt entfernen
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    className="button button--secondary"
+                    onClick={async () => {
+                      await removeFirmFromProject(selectedFirm.id);
+                    }}
+                  >
+                    Aus Projekt entfernen
+                  </button>
                 </div>
 
                 <div>
                   <p className="project-participants__label">Mitarbeiter im Projekt</p>
-                  <ul className="project-participants__employees">
-                    {selectedFirm.employees.map((employee) => (
-                      <li key={employee.id}>
-                        <article className="project-participants__employee-card">
-                          <p className="project-participants__employee-name">{employee.name}</p>
-                          <p className="project-participants__employee-role">{employee.role}</p>
-                        </article>
-                      </li>
-                    ))}
-                  </ul>
+                  {selectedFirm.activeEmployees?.length ? (
+                    <ul className="project-participants__employees">
+                      {selectedFirm.activeEmployees.map((employee) => (
+                        <li key={employee.id}>
+                          <article className="project-participants__employee-card">
+                            <p className="project-participants__employee-name">{employee.name}</p>
+                            <div className="form-actions">
+                              <button
+                                type="button"
+                                className="button button--secondary"
+                                onClick={async () => {
+                                  await deactivateEmployeeForProject({
+                                    projectFirmId: selectedFirm.id,
+                                    globalEmployeeId: employee.id,
+                                  });
+                                }}
+                              >
+                                Deaktivieren
+                              </button>
+                            </div>
+                          </article>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>Noch keine Mitarbeiter im Projekt aktiviert.</p>
+                  )}
                 </div>
 
-                {selectedFirm.type === 'project' ? (
-                  <div className="project-participants__panel">
-                    <h3>Mitarbeiter hinzufügen</h3>
-
-                    <label className="field">
-                      <span>Name</span>
-                      <input
-                        value={newEmployeeName}
-                        onChange={(e) => setNewEmployeeName(e.target.value)}
-                      />
-                    </label>
-
-                    <label className="field">
-                      <span>Rolle</span>
-                      <input
-                        value={newEmployeeRole}
-                        onChange={(e) => setNewEmployeeRole(e.target.value)}
-                      />
-                    </label>
-
-                    <div className="form-actions">
-                      <button
-                        type="button"
-                        className="button"
-                        onClick={() => {
-                          if (!newEmployeeName.trim()) return;
-
-                          addEmployeeToProjectFirm(selectedFirm.id, {
-                            name: newEmployeeName.trim(),
-                            role: newEmployeeRole.trim(),
-                          });
-
-                          setNewEmployeeName('');
-                          setNewEmployeeRole('');
-                        }}
-                      >
-                        Mitarbeiter hinzufügen
-                      </button>
-                    </div>
-                  </div>
-                ) : null}
+                <div>
+                  <p className="project-participants__label">Moegliche Firmenmitarbeiter</p>
+                  {!selectedFirm.globalFirmId ? (
+                    <p>Diese Projektfirma ist nicht mit einem globalen Firmenstamm verknuepft.</p>
+                  ) : selectedFirm.employees?.length ? (
+                    <ul className="project-participants__employees">
+                      {selectedFirm.employees.map((employee) => (
+                        <li key={employee.id}>
+                          <article className="project-participants__employee-card">
+                            <p className="project-participants__employee-name">{employee.name}</p>
+                            <div className="form-actions">
+                              {employee.active ? (
+                                <button
+                                  type="button"
+                                  className="button button--secondary"
+                                  onClick={async () => {
+                                    await deactivateEmployeeForProject({
+                                      projectFirmId: selectedFirm.id,
+                                      globalEmployeeId: employee.id,
+                                    });
+                                  }}
+                                >
+                                  Im Projekt aktiv
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  className="button"
+                                  onClick={async () => {
+                                    await activateEmployeeForProject({
+                                      projectFirmId: selectedFirm.id,
+                                      globalEmployeeId: employee.id,
+                                    });
+                                  }}
+                                >
+                                  Im Projekt aktivieren
+                                </button>
+                              )}
+                            </div>
+                          </article>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>Im globalen Firmenstamm sind noch keine Mitarbeiter hinterlegt.</p>
+                  )}
+                </div>
               </>
             )}
           </section>

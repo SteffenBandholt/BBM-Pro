@@ -1,115 +1,128 @@
 import { useEffect, useState } from 'react';
-import { listProjectParticipants } from '../services/projectParticipantsService.js';
+import {
+  activateProjectEmployee,
+  assignGlobalFirmToProject,
+  createProjectFirm as createProjectFirmService,
+  deactivateProjectEmployee,
+  listProjectParticipants,
+  removeProjectFirm as removeProjectFirmService,
+} from '../services/projectParticipantsService.js';
 
-export function useProjectParticipants() {
+export function useProjectParticipants(projectId) {
   const [firms, setFirms] = useState([]);
   const [selectedFirm, setSelectedFirm] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+  const loadProjectParticipants = async () => {
+    if (!projectId) {
+      setFirms([]);
+      setSelectedFirm(null);
+      setLoading(false);
+      return [];
+    }
+
+    try {
+      setLoading(true);
+      setError('');
+      const items = await listProjectParticipants(projectId);
+      setFirms(items);
+      setSelectedFirm((currentSelectedFirm) => {
+        if (!currentSelectedFirm) {
+          return items[0] || null;
+        }
+        return items.find((firm) => String(firm.id) === String(currentSelectedFirm.id)) || items[0] || null;
+      });
+      return items;
+    } catch (err) {
+      console.error('[project-participants] load failed', err);
+      setError('Projektfirmen konnten nicht geladen werden.');
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    let isActive = true;
+    void loadProjectParticipants();
+  }, [projectId]);
 
-    const loadProjectParticipants = async () => {
-      try {
-        setLoading(true);
-        setError('');
-        const items = await listProjectParticipants();
-        if (isActive) {
-          const normalizedItems = items.map((firm) => ({
-            ...firm,
-            employees: firm.employees.map((employee) => ({
-              ...employee,
-              active: employee.active ?? true,
-            })),
-          }));
-
-          setFirms(normalizedItems);
-        }
-      } catch {
-        if (isActive) {
-          setError('Projektbeteiligte konnten nicht geladen werden.');
-        }
-      } finally {
-        if (isActive) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadProjectParticipants();
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
-
-  const createProjectFirm = (name) => {
-    const newFirm = {
-      id: Date.now(),
-      name,
-      type: 'project',
-      employees: [],
-    };
-
-    setFirms((prev) => [newFirm, ...prev]);
-    setSelectedFirm(newFirm);
-  };
-
-  const addEmployeeToProjectFirm = (firmId, employeeInput) => {
-    const employeeId = Date.now();
-
-    setFirms((prev) =>
-      prev.map((firm) => {
-        if (firm.id !== firmId || firm.type !== 'project') return firm;
-
-        const newEmployee = {
-          id: employeeId,
-          name: employeeInput.name,
-          role: employeeInput.role,
-        };
-
-        return {
-          ...firm,
-          employees: [newEmployee, ...firm.employees],
-        };
-      }),
-    );
-
-    setSelectedFirm((prev) => {
-      if (!prev || prev.id !== firmId || prev.type !== 'project') return prev;
-
-      return {
-        ...prev,
-        employees: [
-          {
-            id: employeeId,
-            name: employeeInput.name,
-            role: employeeInput.role,
-          },
-          ...prev.employees,
-        ],
-      };
-    });
-  };
-
-  const assignGlobalFirm = (firm) => {
-    setFirms((prev) => {
-      if (prev.some((existingFirm) => existingFirm.id === firm.id)) return prev;
-
-      return [firm, ...prev];
-    });
-
-    setSelectedFirm(firm);
-  };
-
-  const removeFirmFromProject = (firmId) => {
-    setFirms((prev) => prev.filter((firm) => firm.id !== firmId));
-
-    setSelectedFirm((prev) => {
-      if (!prev || prev.id !== firmId) return prev;
+  const createProjectFirm = async (name) => {
+    try {
+      setError('');
+      const createdFirm = await createProjectFirmService({ projectId, name });
+      const items = await loadProjectParticipants();
+      setSelectedFirm(items.find((item) => String(item.id) === String(createdFirm.id)) || null);
+      return createdFirm;
+    } catch (err) {
+      console.error('[project-participants] create failed', err);
+      setError(err?.message || 'Projektfirma konnte nicht angelegt werden.');
       return null;
-    });
+    }
+  };
+
+  const assignGlobalFirm = async (firm) => {
+    try {
+      setError('');
+      const assignedFirm = await assignGlobalFirmToProject({
+        projectId,
+        globalFirmId: firm.id,
+      });
+      const items = await loadProjectParticipants();
+      setSelectedFirm(items.find((item) => String(item.id) === String(assignedFirm.id)) || null);
+      return assignedFirm;
+    } catch (err) {
+      console.error('[project-participants] assign failed', err);
+      setError(err?.message || 'Globale Firma konnte nicht zugeordnet werden.');
+      return null;
+    }
+  };
+
+  const removeFirmFromProject = async (firmId) => {
+    try {
+      setError('');
+      await removeProjectFirmService(firmId);
+      const items = await loadProjectParticipants();
+      setSelectedFirm((currentSelectedFirm) => {
+        if (!currentSelectedFirm || String(currentSelectedFirm.id) !== String(firmId)) {
+          return currentSelectedFirm;
+        }
+        return items[0] || null;
+      });
+      return true;
+    } catch (err) {
+      console.error('[project-participants] remove failed', err);
+      setError(err?.message || 'Projektfirma konnte nicht entfernt werden.');
+      return false;
+    }
+  };
+
+  const activateEmployeeForProject = async ({ projectFirmId, globalEmployeeId }) => {
+    try {
+      setError('');
+      await activateProjectEmployee({ projectFirmId, globalEmployeeId });
+      const items = await loadProjectParticipants();
+      setSelectedFirm(items.find((item) => String(item.id) === String(projectFirmId)) || null);
+      return true;
+    } catch (err) {
+      console.error('[project-participants] activate employee failed', err);
+      setError(err?.message || 'Mitarbeiter konnte nicht aktiviert werden.');
+      return false;
+    }
+  };
+
+  const deactivateEmployeeForProject = async ({ projectFirmId, globalEmployeeId }) => {
+    try {
+      setError('');
+      await deactivateProjectEmployee({ projectFirmId, globalEmployeeId });
+      const items = await loadProjectParticipants();
+      setSelectedFirm(items.find((item) => String(item.id) === String(projectFirmId)) || null);
+      return true;
+    } catch (err) {
+      console.error('[project-participants] deactivate employee failed', err);
+      setError(err?.message || 'Mitarbeiter konnte nicht deaktiviert werden.');
+      return false;
+    }
   };
 
   return {
@@ -119,8 +132,9 @@ export function useProjectParticipants() {
     loading,
     error,
     createProjectFirm,
-    addEmployeeToProjectFirm,
     assignGlobalFirm,
     removeFirmFromProject,
+    activateEmployeeForProject,
+    deactivateEmployeeForProject,
   };
 }

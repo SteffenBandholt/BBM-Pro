@@ -15,6 +15,12 @@ export function listByFirm(globalFirmId) {
     .all(globalFirmId);
 }
 
+export function getById(employeeId) {
+  ensureFirmEmployeesSchemaReady();
+  const db = getDb();
+  return db.prepare(`SELECT * FROM global_firm_employees WHERE id = ? AND removed_at IS NULL`).get(employeeId) || null;
+}
+
 export function createEmployee({ globalFirmId, name }) {
   ensureFirmEmployeesSchemaReady();
   const trimmedName = String(name || "").trim();

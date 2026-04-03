@@ -10,6 +10,12 @@ export function listByFirm(globalFirmId) {
     .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 }
 
+export function getById(employeeId) {
+  const db = readDb();
+  const employees = db.globalFirmEmployees || [];
+  return employees.find((employee) => String(employee.id) === String(employeeId) && !employee.removed_at) || null;
+}
+
 export function createEmployee({ globalFirmId, name }) {
   const trimmedName = String(name || "").trim();
   if (!globalFirmId) {
