@@ -703,42 +703,6 @@ export default function MeetingDetailPage() {
         <div className="protocol-layout">
           <div className="protocol-main">
             <ProtocolTopList tops={topTree} selectedTopId={selectedTopId} onSelectTop={handleTopSelect} />
-
-            <div className="protocol-participants">
-              <h3>Teilnehmer (Firmen)</h3>
-              {firms.length === 0 ? (
-                <p>Keine Firmen vorhanden.</p>
-              ) : (
-                <ul>
-                  {firms.map((f) => {
-                    const entry = participants.find((p) => String(p.firm_id) === String(f.id));
-                    const present = entry ? !!entry.is_present : false;
-                    const dist = entry ? !!entry.is_in_distribution : false;
-                    return (
-                      <li key={f.id} className="participant-row">
-                        <span>{f.name}</span>
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={present}
-                            onChange={(e) => handleToggleParticipant(f.id, 'is_present', e.target.checked)}
-                          />
-                          anwesend
-                        </label>
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={dist}
-                            onChange={(e) => handleToggleParticipant(f.id, 'is_in_distribution', e.target.checked)}
-                          />
-                          Verteiler
-                        </label>
-                      </li>
-                    );
-                  })}
-                </ul>
-              )}
-            </div>
           </div>
 
           <div className="protocol-bottom-area">
