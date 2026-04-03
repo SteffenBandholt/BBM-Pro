@@ -1,4 +1,9 @@
 import { getTrafficLightTone } from '../data/meetingTrafficLight.js';
+import {
+  getTextLength,
+  TOP_LONGTEXT_MAX_LENGTH,
+  TOP_TITLE_MAX_LENGTH,
+} from '../../../services/tops/topTextLimits.js';
 
 export default function ProtocolEditorPanel({
   title,
@@ -24,6 +29,8 @@ export default function ProtocolEditorPanel({
 
   const disableTitle = isReadOnly || titleLocked;
   const hideMeta = isTitleLevel;
+  const titleLength = getTextLength(draft.title);
+  const longtextLength = getTextLength(draft.longtext);
 
   return (
     <section className="protocol-editor-panel">
@@ -69,25 +76,33 @@ export default function ProtocolEditorPanel({
         <div className="protocol-editor-main">
           <div className="protocol-editor-title-row">
             <label className="field protocol-editor-title-row__title">
-              <span>Titel</span>
+              <span className="protocol-editor-field-label-row">
+                <span>Titel</span>
+                <span className="protocol-editor-char-count">{titleLength} / {TOP_TITLE_MAX_LENGTH}</span>
+              </span>
               <input
                 value={draft.title}
                 onChange={(event) => onFieldChange('title', event.target.value)}
                 onBlur={(event) => onFieldBlur?.('title', event.target.value)}
                 disabled={disableTitle}
+                maxLength={TOP_TITLE_MAX_LENGTH}
               />
             </label>
           </div>
 
           {isTitleLevel ? null : (
             <label className="field protocol-editor-longtext">
-              <span>Langtext</span>
+              <span className="protocol-editor-field-label-row">
+                <span>Langtext</span>
+                <span className="protocol-editor-char-count">{longtextLength} / {TOP_LONGTEXT_MAX_LENGTH}</span>
+              </span>
               <textarea
                 rows={2}
                 value={draft.longtext}
                 onChange={(event) => onFieldChange('longtext', event.target.value)}
                 onBlur={(event) => onFieldBlur?.('longtext', event.target.value)}
                 disabled={isReadOnly}
+                maxLength={TOP_LONGTEXT_MAX_LENGTH}
               />
             </label>
           )}
@@ -99,19 +114,21 @@ export default function ProtocolEditorPanel({
               <div className="protocol-editor-meta-column__row protocol-editor-meta-column__row--top">
                 <label className="field protocol-editor-meta__date">
                   <span>Fertig bis</span>
-                  <input
-                    type="date"
-                    value={draft.dueDate}
-                    onChange={(event) => onFieldChange('dueDate', event.target.value)}
-                    disabled={isReadOnly}
-                  />
+                  <span className="protocol-editor-meta__date-input-row">
+                    <input
+                      type="date"
+                      value={draft.dueDate}
+                      onChange={(event) => onFieldChange('dueDate', event.target.value)}
+                      disabled={isReadOnly}
+                    />
+                    <button
+                      type="button"
+                      className={trafficLightClass}
+                      aria-label={trafficLightTone ? `Ampel ${trafficLightTone}` : 'Ampel'}
+                      disabled
+                    />
+                  </span>
                 </label>
-                <button
-                  type="button"
-                  className={trafficLightClass}
-                  aria-label={trafficLightTone ? `Ampel ${trafficLightTone}` : 'Ampel'}
-                  disabled
-                />
               </div>
 
               <label className="field protocol-editor-meta__status">

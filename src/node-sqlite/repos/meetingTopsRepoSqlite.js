@@ -1,5 +1,6 @@
 import { getDb } from "../client.js";
 import { nowIso } from "../../services/utils/time.js";
+import { normalizeTopLongtextForStorage } from "../../services/tops/topTextLimits.js";
 
 function ensureDefaults(row) {
   return {
@@ -47,12 +48,13 @@ export function getMeetingTop(meetingId, topId) {
 
 export function attachTopToMeeting(input) {
   const db = getDb();
+  const normalizedLongtext = normalizeTopLongtextForStorage(input.longtext);
   const row = ensureDefaults({
     meeting_id: input.meetingId,
     top_id: input.topId,
     status: input.status ?? "offen",
     due_date: input.dueDate ?? null,
-    longtext: input.longtext ?? null,
+    longtext: normalizedLongtext,
     is_carried_over: input.isCarriedOver ? 1 : 0,
     completed_in_meeting_id: input.completed_in_meeting_id ?? null,
     is_important: input.is_important ? 1 : 0,
@@ -85,6 +87,9 @@ export function attachTopToMeeting(input) {
 export function updateMeetingTop(update) {
   const db = getDb();
   const now = nowIso();
+  const normalizedLongtext =
+    update.longtext === undefined ? undefined : normalizeTopLongtextForStorage(update.longtext);
+  const nextUpdate = normalizedLongtext === undefined ? update : { ...update, longtext: normalizedLongtext };
   const sets = [];
   const vals = [];
   const fields = [
@@ -113,16 +118,16 @@ export function updateMeetingTop(update) {
     "frozen_ampel_reason",
   ];
   fields.forEach((f) => {
-    if (update[f] !== undefined) {
+    if (nextUpdate[f] !== undefined) {
       sets.push(`${f} = ?`);
-      vals.push(update[f]);
+      vals.push(nextUpdate[f]);
     }
   });
   sets.push(`updated_at = ?`);
-  vals.push(now, update.meetingId, update.topId);
+  vals.push(now, nextUpdate.meetingId, nextUpdate.topId);
   const sql = `UPDATE meeting_tops SET ${sets.join(", ")} WHERE meeting_id = ? AND top_id = ?`;
   const info = db.prepare(sql).run(...vals);
-  return { changed: info.changes, row: getMeetingTop(update.meetingId, update.topId) };
+  return { changed: info.changes, row: getMeetingTop(nextUpdate.meetingId, nextUpdate.topId) };
 }
 
 export function listJoinedByMeeting(meetingId) {

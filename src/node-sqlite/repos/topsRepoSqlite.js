@@ -1,6 +1,7 @@
 import { getDb } from "../client.js";
 import { nowIso } from "../../services/utils/time.js";
 import { createId } from "../../services/utils/id.js";
+import { normalizeTopTitleForStorage } from "../../services/tops/topTextLimits.js";
 
 export function getTopById(topId) {
   const db = getDb();
@@ -32,17 +33,19 @@ export function createTop({ projectId, parentTopId = null, level, number, title 
   const db = getDb();
   const id = createId();
   const now = nowIso();
+  const normalizedTitle = normalizeTopTitleForStorage(title);
   db.prepare(
     `INSERT INTO tops (id, project_id, parent_top_id, level, number, title, is_hidden, is_trashed, removed_at, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, 0, 0, NULL, ?, ?)`,
-  ).run(id, projectId, parentTopId ?? null, level, number, title?.trim() || "(ohne Bezeichnung)", now, now);
+  ).run(id, projectId, parentTopId ?? null, level, number, normalizedTitle || "(ohne Bezeichnung)", now, now);
   return getTopById(id);
 }
 
 export function updateTitle({ topId, title }) {
   const db = getDb();
   const now = nowIso();
-  db.prepare(`UPDATE tops SET title = ?, updated_at = ? WHERE id = ?`).run(title?.trim() || "(ohne Bezeichnung)", now, topId);
+  const normalizedTitle = normalizeTopTitleForStorage(title);
+  db.prepare(`UPDATE tops SET title = ?, updated_at = ? WHERE id = ?`).run(normalizedTitle || "(ohne Bezeichnung)", now, topId);
   return getTopById(topId);
 }
 

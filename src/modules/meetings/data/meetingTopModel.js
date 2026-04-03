@@ -347,8 +347,8 @@ export function addMeetingTop(tops, draft) {
 
   const newTop = normalizeTop({
     id: createTopId(),
-    title: draft.title?.trim() ?? '',
-    longtext: draft.longtext?.trim() ?? '',
+    title: draft.title ?? '',
+    longtext: draft.longtext ?? '',
     dueDate: draft.dueDate || null,
     createdAt: draft.createdAt || DEFAULT_CREATED_AT,
     ampel: draft.ampel ?? 'gelb',
@@ -377,11 +377,11 @@ export function updateMeetingTop(tops, topId, draft) {
       return top;
     }
 
-    const nextTitle = top.isCarriedOver ? top.title : draft.title?.trim() ?? '';
+    const nextTitle = top.isCarriedOver ? top.title : draft.title ?? '';
     const draftStatus = TOP_STATUS_VALUES.has(draft.status) ? draft.status : top.status;
     const hasChanged =
       top.title !== nextTitle ||
-      top.longtext !== (draft.longtext?.trim() ?? '') ||
+      top.longtext !== (draft.longtext ?? '') ||
       top.dueDate !== (draft.dueDate || null) ||
       top.isHidden !== Boolean(draft.isHidden) ||
       top.isImportant !== Boolean(draft.isImportant);
@@ -393,7 +393,7 @@ export function updateMeetingTop(tops, topId, draft) {
     const nextTop = normalizeTop({
       ...top,
       title: nextTitle,
-      longtext: draft.longtext?.trim() ?? '',
+      longtext: draft.longtext ?? '',
       dueDate: draft.dueDate || null,
       responsibleId: draft.responsibleId ?? top.responsibleId ?? top.responsible_id ?? null,
       responsibleKind: draft.responsible_kind ?? draft.responsibleKind ?? top.responsibleKind ?? top.responsible_kind ?? null,

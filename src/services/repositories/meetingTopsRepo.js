@@ -1,5 +1,6 @@
 import { readDb, writeDb } from "../storage/localDb.js";
 import { nowIso } from "../utils/time.js";
+import { normalizeTopLongtextForStorage } from "../tops/topTextLimits.js";
 
 // Helper to ensure optional flags exist.
 function ensureDefaults(row) {
@@ -43,12 +44,13 @@ export function getMeetingTop(meetingId, topId) {
 
 export function attachTopToMeeting(input) {
   const db = readDb();
+  const normalizedLongtext = normalizeTopLongtextForStorage(input.longtext);
   const row = ensureDefaults({
     meeting_id: input.meetingId,
     top_id: input.topId,
     status: input.status ?? "offen",
     due_date: input.dueDate ?? null,
-    longtext: input.longtext ?? null,
+    longtext: normalizedLongtext,
     is_carried_over: input.isCarriedOver ? 1 : 0,
     completed_in_meeting_id: input.completed_in_meeting_id ?? null,
     is_important: input.is_important ? 1 : 0,
@@ -97,6 +99,7 @@ export function updateMeetingTop({
   frozen_ampel_reason = undefined,
 }) {
   const db = readDb();
+  const normalizedLongtext = longtext === undefined ? undefined : normalizeTopLongtextForStorage(longtext);
   let updated = null;
   db.meetingTops = db.meetingTops.map((mt) => {
     if (String(mt.meeting_id) !== String(meetingId) || String(mt.top_id) !== String(topId)) return mt;
@@ -104,7 +107,7 @@ export function updateMeetingTop({
       ...mt,
       status: status ?? mt.status,
       due_date: dueDate === undefined ? mt.due_date : dueDate,
-      longtext: longtext === undefined ? mt.longtext : longtext,
+      longtext: normalizedLongtext === undefined ? mt.longtext : normalizedLongtext,
       completed_in_meeting_id:
         completed_in_meeting_id === undefined ? mt.completed_in_meeting_id : completed_in_meeting_id,
       is_important: is_important === undefined ? mt.is_important : is_important ? 1 : 0,

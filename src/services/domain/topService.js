@@ -1,5 +1,9 @@
 import { getRepos } from "../repositories/index.js";
 import { todayYmd } from "../utils/time.js";
+import {
+  normalizeTopLongtextForStorage,
+  normalizeTopTitleForStorage,
+} from "../tops/topTextLimits.js";
 
 const { topsRepo, meetingTopsRepo, meetingsRepo, projectFirmsRepo } = getRepos();
 
@@ -25,7 +29,9 @@ export async function listByMeeting(meetingId) {
 export async function createTop({ projectId, meetingId, parentTopId = null, level, title }) {
   if (!projectId) throw new Error("projectId required");
   if (!meetingId) throw new Error("meetingId required");
-  if (!title) throw new Error("title required");
+
+  const normalizedTitle = normalizeTopTitleForStorage(title);
+  if (!normalizedTitle.trim()) throw new Error("Titel darf nicht leer sein");
 
   const meeting = await assertOpenMeeting(meetingId);
   if (String(meeting.project_id) !== String(projectId)) throw new Error("Project mismatch");
@@ -48,7 +54,7 @@ export async function createTop({ projectId, meetingId, parentTopId = null, leve
     parentTopId: parentTopId || null,
     level: lvl,
     number,
-    title,
+    title: normalizedTitle,
   });
 
   const todayIso = todayYmd();
@@ -119,7 +125,7 @@ export async function moveTop({ topId, targetParentId = null }) {
 
 function detectTouched(prev, patch) {
   const fields = [
-    ["title", (v) => v?.trim() ?? ""],
+    ["title", (v) => v ?? ""],
     ["longtext", (v) => v ?? ""],
     ["status", (v) => (v ?? "").toLowerCase()],
     ["due_date", (v) => v ?? ""],
@@ -137,6 +143,15 @@ export async function updateMeetingFields({ meetingId, topId, patch }) {
 
   const isCarried = Number(mt.is_carried_over) === 1;
   const next = { ...patch };
+
+  if (patch.title !== undefined) {
+    next.title = normalizeTopTitleForStorage(patch.title);
+    if (!next.title.trim()) throw new Error("Titel darf nicht leer sein");
+  }
+
+  if (patch.longtext !== undefined) {
+    next.longtext = normalizeTopLongtextForStorage(patch.longtext);
+  }
 
   if (isCarried && patch.title !== undefined) {
     throw new Error("Uebernommener TOP: Titel ist gesperrt");

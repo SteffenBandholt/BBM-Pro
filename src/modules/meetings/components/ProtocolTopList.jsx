@@ -1,5 +1,10 @@
 import { useState } from 'react';
 import { getTrafficLightTone } from '../data/meetingTrafficLight.js';
+import {
+  getTextLength,
+  TOP_LONGTEXT_MAX_LENGTH,
+  TOP_TITLE_MAX_LENGTH,
+} from '../../../services/tops/topTextLimits.js';
 
 function formatCreatedAt(createdAt) {
   if (!createdAt) return '';
@@ -28,6 +33,8 @@ function ProtocolTopRow({ top, selectedTopId, onSelectTop, collapsedTopIds, onTo
   const trafficLightClass = `protocol-top-row__traffic-light${
     trafficLightTone ? ` protocol-top-row__traffic-light--${trafficLightTone}` : ''
   }`;
+  const titleLength = getTextLength(top.title);
+  const longtextLength = getTextLength(top.longtext);
 
   const originClass = isTitle ? '' : top.isCarriedOver ? 'protocol-top-row--carried' : 'protocol-top-row--new';
   const doneClass = !isTitle && top.status === 'erledigt' ? 'protocol-top-row--done' : '';
@@ -67,6 +74,12 @@ function ProtocolTopRow({ top, selectedTopId, onSelectTop, collapsedTopIds, onTo
             <span className="protocol-top-row__title-block">
               <span className="protocol-top-row__title">{top.title}</span>
               {!isTitle && top.longtext ? <span className="protocol-top-row__text">{top.longtext}</span> : null}
+              <span className="protocol-top-row__counts">
+                <span className="protocol-top-row__count">Titel {titleLength} / {TOP_TITLE_MAX_LENGTH}</span>
+                {isTitle ? null : (
+                  <span className="protocol-top-row__count">Langtext {longtextLength} / {TOP_LONGTEXT_MAX_LENGTH}</span>
+                )}
+              </span>
             </span>
             {isTitle ? null : (
               <span className="protocol-top-row__meta-column">

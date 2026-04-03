@@ -1,5 +1,6 @@
 import { readDb, writeDb } from "../storage/localDb.js";
 import { createId } from "../utils/id.js";
+import { normalizeTopTitleForStorage } from "../tops/topTextLimits.js";
 
 function nowIso() {
   return new Date().toISOString();
@@ -31,13 +32,14 @@ export function createTop({ projectId, parentTopId = null, level, number, title 
   const db = readDb();
   const id = createId();
   const now = nowIso();
+  const normalizedTitle = normalizeTopTitleForStorage(title);
   const top = {
     id,
     project_id: projectId,
     parent_top_id: parentTopId || null,
     level,
     number,
-    title: title?.trim() || "(ohne Bezeichnung)",
+    title: normalizedTitle || "(ohne Bezeichnung)",
     is_hidden: 0,
     is_trashed: 0,
     removed_at: null,
@@ -51,10 +53,11 @@ export function createTop({ projectId, parentTopId = null, level, number, title 
 
 export function updateTitle({ topId, title }) {
   const db = readDb();
+  const normalizedTitle = normalizeTopTitleForStorage(title);
   let updated = null;
   db.tops = db.tops.map((t) => {
     if (String(t.id) !== String(topId)) return t;
-    updated = { ...t, title: title?.trim() || t.title, updated_at: nowIso() };
+    updated = { ...t, title: normalizedTitle || t.title, updated_at: nowIso() };
     return updated;
   });
   writeDb(db);

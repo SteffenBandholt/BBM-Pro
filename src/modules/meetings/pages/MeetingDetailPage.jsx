@@ -6,6 +6,7 @@ import {
   canMoveMeetingTop,
   getMeetingTopMoveTargetOptions,
 } from '../data/meetingTopModel.js';
+import { clampTopLongtextInput, clampTopTitleInput } from '../../../services/tops/topTextLimits.js';
 import {
   listMeetingTops,
   createTop as createTopSvc,
@@ -236,7 +237,14 @@ export default function MeetingDetailPage() {
   };
 
   const handleEditorFieldChange = (field, value) => {
-    setEditorDraft((currentDraft) => ({ ...currentDraft, [field]: value }));
+    let nextValue = value;
+    if (field === 'title') {
+      nextValue = clampTopTitleInput(value);
+    } else if (field === 'longtext') {
+      nextValue = clampTopLongtextInput(value);
+    }
+
+    setEditorDraft((currentDraft) => ({ ...currentDraft, [field]: nextValue }));
 
     // Auto-save nur im Edit-Modus
     if (editorMode !== 'edit' || !selectedTop || isMeetingClosed) {
@@ -256,48 +264,48 @@ export default function MeetingDetailPage() {
     };
 
     if (field === 'status') {
-      if ((selectedTop.status || 'offen') === value) return;
-      void commitEditorPatch(activeTopId, { status: value });
+      if ((selectedTop.status || 'offen') === nextValue) return;
+      void commitEditorPatch(activeTopId, { status: nextValue });
     } else if (field === 'dueDate') {
-      const val = value ? String(value).trim() : null;
+      const val = nextValue ? String(nextValue).trim() : null;
       if ((selectedTop.dueDate || null) === val) return;
       void commitEditorPatch(activeTopId, { dueDate: val });
     } else if (field === 'isImportant') {
-      if (Boolean(selectedTop.isImportant) === Boolean(value)) return;
-      void commitEditorPatch(activeTopId, { is_important: value });
+      if (Boolean(selectedTop.isImportant) === Boolean(nextValue)) return;
+      void commitEditorPatch(activeTopId, { is_important: nextValue });
     } else if (field === 'responsibleId') {
-      if (String(selectedTop.responsibleId || '') === String(value || '')) return;
-      const firm = firms.find((f) => String(f.id) === String(value));
+      if (String(selectedTop.responsibleId || '') === String(nextValue || '')) return;
+      const firm = firms.find((f) => String(f.id) === String(nextValue));
       void commitEditorPatch(activeTopId, {
-        responsible_kind: value ? 'firm' : null,
-        responsible_id: value || null,
+        responsible_kind: nextValue ? 'firm' : null,
+        responsible_id: nextValue || null,
         responsible_label: firm ? firm.name : null,
       });
     } else if (field === 'title') {
       scheduleDebounced(titleDebounce, TITLE_DEBOUNCE_MS, () => {
-        const nextTitle = (value || '').trim();
+        const nextTitle = nextValue || '';
         if ((selectedTop.title || '') === nextTitle) return null;
         return { title: nextTitle };
-      }, () => (value || '').trim());
+      }, () => nextValue || '');
     } else if (field === 'longtext') {
       scheduleDebounced(longtextDebounce, LONGTEXT_DEBOUNCE_MS, () => {
-        const nextLongtext = value || '';
+        const nextLongtext = nextValue || '';
         if ((selectedTop.longtext || '') === nextLongtext) return null;
         return { longtext: nextLongtext };
-      }, () => value || '');
+      }, () => nextValue || '');
     }
   };
 
   const handleEditorFieldBlur = (field, value) => {
     if (editorMode !== 'edit' || !selectedTop || isMeetingClosed) return;
     const activeTopId = selectedTop.id;
-    const trimmed = typeof value === 'string' ? value.trim() : value;
     if (field === 'title') {
+      const nextTitle = value || '';
       if (titleDebounce.timer) clearTimeout(titleDebounce.timer);
-      if (titleDebounce.lastSent === (trimmed || '')) return;
-      if ((selectedTop.title || '') === (trimmed || '')) return;
-      titleDebounce.lastSent = trimmed || '';
-      void queueTextEditorPatch(activeTopId, { title: trimmed || '' });
+      if (titleDebounce.lastSent === nextTitle) return;
+      if ((selectedTop.title || '') === nextTitle) return;
+      titleDebounce.lastSent = nextTitle;
+      void queueTextEditorPatch(activeTopId, { title: nextTitle });
     } else if (field === 'longtext') {
       if (longtextDebounce.timer) clearTimeout(longtextDebounce.timer);
       if (longtextDebounce.lastSent === (value || '')) return;
@@ -421,15 +429,15 @@ export default function MeetingDetailPage() {
         alert('Protokoll ist geschlossen.');
         return;
       }
-      const trimmedTitle = (editorDraft.title || '').trim();
-      if (!trimmedTitle) {
+      const rawTitle = editorDraft.title || '';
+      if (!rawTitle.trim()) {
         alert('Titel darf nicht leer sein.');
         return;
       }
 
       if (editorMode === 'edit' && selectedTop) {
         const patch = {
-          title: selectedTop.isCarriedOver ? undefined : trimmedTitle,
+          title: selectedTop.isCarriedOver ? undefined : rawTitle,
           longtext: editorDraft.longtext,
           dueDate: editorDraft.dueDate,
           status: editorDraft.status,
@@ -462,7 +470,7 @@ export default function MeetingDetailPage() {
             meetingId,
             parentTopId,
             level,
-            title: trimmedTitle,
+            title: rawTitle,
           });
           if (created?.id) {
             setSelectedTopId(created.id);
