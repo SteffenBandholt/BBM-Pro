@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { createFirm, listFirms } from '../services/firmsService.js';
+import { createFirm, createFirmEmployee, listFirms } from '../services/firmsService.js';
 
 export function useFirms() {
   const [firms, setFirms] = useState([]);
@@ -49,6 +49,37 @@ export function useFirms() {
     }
   };
 
+  const createEmployeeForFirm = async ({ firmId, name }) => {
+    try {
+      setError('');
+      const createdEmployee = await createFirmEmployee({
+        globalFirmId: firmId,
+        name,
+      });
+      await loadFirms();
+      setSelectedFirm((currentSelectedFirm) => {
+        if (!currentSelectedFirm) {
+          return currentSelectedFirm;
+        }
+        if (String(currentSelectedFirm.id) !== String(firmId)) {
+          return currentSelectedFirm;
+        }
+        return {
+          ...currentSelectedFirm,
+          employees: [...(currentSelectedFirm.employees || []), createdEmployee].sort((a, b) =>
+            (a.name || '').localeCompare(b.name || ''),
+          ),
+        };
+      });
+      return createdEmployee;
+    } catch (err) {
+      console.error('[firms] create employee failed', err);
+      const nextMessage = err?.message || 'Mitarbeiter konnte nicht angelegt werden.';
+      setError(nextMessage);
+      return null;
+    }
+  };
+
   return {
     firms,
     selectedFirm,
@@ -56,5 +87,6 @@ export function useFirms() {
     loading,
     error,
     createGlobalFirm,
+    createEmployeeForFirm,
   };
 }

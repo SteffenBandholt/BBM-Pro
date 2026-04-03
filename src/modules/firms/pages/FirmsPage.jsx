@@ -4,8 +4,9 @@ import FirmDetailPanel from '../components/FirmDetailPanel.jsx';
 import { useFirms } from '../hooks/useFirms.js';
 
 export default function FirmsPage() {
-  const { firms, selectedFirm, setSelectedFirm, loading, error, createGlobalFirm } = useFirms();
+  const { firms, selectedFirm, setSelectedFirm, loading, error, createGlobalFirm, createEmployeeForFirm } = useFirms();
   const [newFirmName, setNewFirmName] = useState('');
+  const [newEmployeeName, setNewEmployeeName] = useState('');
 
   return (
     <section className="project-participants">
@@ -54,7 +55,40 @@ export default function FirmsPage() {
             {!selectedFirm ? (
               <p>Bitte waehlen Sie links eine Firma aus.</p>
             ) : (
-              <FirmDetailPanel firm={selectedFirm} />
+              <>
+                <FirmDetailPanel firm={selectedFirm} />
+
+                <section className="project-participants__panel">
+                  <h3>Mitarbeiter anlegen</h3>
+                  <label className="field">
+                    <span>Name</span>
+                    <input
+                      value={newEmployeeName}
+                      onChange={(event) => setNewEmployeeName(event.target.value)}
+                      placeholder="Name des Mitarbeiters"
+                    />
+                  </label>
+                  <div className="form-actions">
+                    <button
+                      type="button"
+                      className="button"
+                      onClick={async () => {
+                        const trimmedName = newEmployeeName.trim();
+                        if (!trimmedName) return;
+                        const createdEmployee = await createEmployeeForFirm({
+                          firmId: selectedFirm.id,
+                          name: trimmedName,
+                        });
+                        if (createdEmployee) {
+                          setNewEmployeeName('');
+                        }
+                      }}
+                    >
+                      Mitarbeiter anlegen
+                    </button>
+                  </div>
+                </section>
+              </>
             )}
           </section>
         </div>

@@ -4,6 +4,7 @@ import {
   topsRepo,
   meetingTopsRepo,
   globalFirmsRepo,
+  globalFirmEmployeesRepo,
   projectFirmsRepo,
   projectPersonsRepo,
   meetingParticipantsRepo,
@@ -52,6 +53,8 @@ export function registerDbIpcHandlers(ipcMain) {
   ipcMain.handle('db:globalFirms:list', wrap(() => globalFirmsRepo.listFirms()));
   ipcMain.handle('db:globalFirms:get', wrap((p) => globalFirmsRepo.getById(p.firmId)));
   ipcMain.handle('db:globalFirms:create', wrap((p) => globalFirmsRepo.createFirm(p)));
+  ipcMain.handle('db:globalFirmEmployees:list', wrap((p) => globalFirmEmployeesRepo.listByFirm(p.globalFirmId)));
+  ipcMain.handle('db:globalFirmEmployees:create', wrap((p) => globalFirmEmployeesRepo.createEmployee(p)));
 
   ipcMain.handle('db:firms:list', wrap((p) => projectFirmsRepo.listByProject(p.projectId)));
   ipcMain.handle('db:firms:get', wrap((p) => projectFirmsRepo.getById(p.firmId)));

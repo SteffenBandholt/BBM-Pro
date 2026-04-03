@@ -61,6 +61,20 @@ function ensureFirmFlowTables(db) {
   }
 }
 
+function ensureFirmEmployeesTable(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS global_firm_employees (
+      id TEXT PRIMARY KEY,
+      global_firm_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      removed_at TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (global_firm_id) REFERENCES global_firms(id) ON DELETE CASCADE
+    );
+  `);
+}
+
 // Minimal schema for Protokoll-Modul (projects, meetings, tops, meeting_tops, project_firms, project_persons, meeting_participants)
 const MIGRATIONS = [
   {
@@ -204,6 +218,11 @@ const MIGRATIONS = [
     id: 4,
     name: "firms-flow",
     run: ensureFirmFlowTables,
+  },
+  {
+    id: 6,
+    name: "firm-employees",
+    run: ensureFirmEmployeesTable,
   },
 ];
 

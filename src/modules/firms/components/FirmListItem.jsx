@@ -7,7 +7,7 @@ export default function FirmListItem({ firm, isSelected, onClick }) {
     >
       <span className="project-participants__firm-name">{firm.name}</span>
       <span className="project-participants__firm-meta">
-        {firm.shortLabel ? `Kuerzel: ${firm.shortLabel}` : 'Globale Firma'}
+        {firm.employees?.length ? `${firm.employees.length} Mitarbeiter` : 'Noch keine Mitarbeiter'}
       </span>
     </button>
   );
