@@ -1,32 +1,25 @@
 export default function LastProjectPanel({
   project,
-  onOpenProject,
+  onOpenProtocol,
   onCreateProject,
 }) {
   return (
     <section className="dashboard-section last-project-panel">
-      <h2>Weiterarbeiten</h2>
+      <h2>Schnellstart</h2>
 
       {project ? (
         <button
           type="button"
           className="last-project-panel__card"
-          onClick={() => onOpenProject(project)}
+          onClick={() => onOpenProtocol(project)}
         >
-          <span className="last-project-panel__label">
-            {project.isRemembered ? 'Zuletzt geoeffnet' : 'Weiter im Projekt'}
+          <span className="last-project-panel__label">Zum Protokoll</span>
+          <span className="last-project-panel__meta">{project.name}</span>
+          <span className="last-project-panel__details">
+            {project.latestMeetingLabel === 'Noch keine Besprechung'
+              ? 'neues Protokoll wird angelegt'
+              : 'vorhandenes Protokoll oeffnen'}
           </span>
-          <span className="last-project-panel__title">{project.name}</span>
-          {project.metaLine ? (
-            <span className="last-project-panel__meta">{project.metaLine}</span>
-          ) : null}
-          {project.lastActivityLabel || project.latestMeetingLabel ? (
-            <span className="last-project-panel__details">
-              {project.lastActivityLabel
-                ? `Letzte Aktivitaet: ${project.lastActivityLabel}`
-                : project.latestMeetingLabel}
-            </span>
-          ) : null}
         </button>
       ) : (
         <div className="last-project-panel__empty">

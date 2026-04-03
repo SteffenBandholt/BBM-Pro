@@ -3,6 +3,15 @@ import ActionLinksPanel from '../components/ActionLinksPanel.jsx';
 import LastProjectPanel from '../components/LastProjectPanel.jsx';
 import { useAppHome } from '../hooks/useAppHome.js';
 import ProjectList from '../../projects/components/ProjectList.jsx';
+import { createMeeting, listMeetings } from '../../meetings/services/meetingsService.js';
+import {
+  getProjectLatestMeeting,
+  getProjectOpenMeeting,
+} from '../../projects/services/projectStartService.js';
+
+function todayIso() {
+  return new Date().toISOString().slice(0, 10);
+}
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -20,6 +29,32 @@ export default function HomePage() {
     navigate(`/projects/${project.id}`);
   };
 
+  const handleOpenProtocol = async (project) => {
+    if (!project?.id) {
+      return;
+    }
+
+    const meetings = await listMeetings(project.id);
+    const openMeeting = getProjectOpenMeeting(meetings);
+    const latestMeeting = getProjectLatestMeeting(meetings);
+
+    if (openMeeting?.id) {
+      navigate(`/meetings/${openMeeting.id}`);
+      return;
+    }
+
+    if (latestMeeting?.id) {
+      navigate(`/meetings/${latestMeeting.id}`);
+      return;
+    }
+
+    const createdMeeting = await createMeeting(project.id, {
+      title: `${project.name || 'Projekt'} - Besprechung`,
+      date: todayIso(),
+    });
+    navigate(`/meetings/${createdMeeting.id}`);
+  };
+
   return (
     <section className="page-section app-home">
       {loading ? <p>Lade Startseite ...</p> : null}
@@ -30,7 +65,7 @@ export default function HomePage() {
           <div className="app-home__main-grid">
             <LastProjectPanel
               project={lastProject}
-              onOpenProject={handleOpenProject}
+              onOpenProtocol={handleOpenProtocol}
               onCreateProject={handleNewProject}
             />
 
