@@ -1,12 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import DashboardHeader from '../components/DashboardHeader.jsx';
-import ModuleNavigation from '../components/ModuleNavigation.jsx';
-import RecentProjectsPanel from '../components/RecentProjectsPanel.jsx';
-import { useDashboard } from '../hooks/useDashboard.js';
+import ActionLinksPanel from '../components/ActionLinksPanel.jsx';
+import LastProjectPanel from '../components/LastProjectPanel.jsx';
+import { useAppHome } from '../hooks/useAppHome.js';
+import ProjectList from '../../projects/components/ProjectList.jsx';
 
 export default function HomePage() {
   const navigate = useNavigate();
-  const { modules, projects, loading, error } = useDashboard();
+  const { lastProject, activeProjects, projectManagement, masterData, loading, error } = useAppHome();
 
   const handleNewProject = () => {
     navigate('/projects?mode=create');
@@ -16,21 +16,61 @@ export default function HomePage() {
     navigate('/projects');
   };
 
-  return (
-    <section className="page-section">
-      <DashboardHeader
-        title="BBM-Pro"
-        description="Schneller Einstieg in Projekte, Module und aktuelle Arbeitspunkte."
-        onNewProject={handleNewProject}
-        onGoToProjects={handleGoToProjects}
-      />
+  const handleOpenProject = (project) => {
+    navigate(`/projects/${project.id}`);
+  };
 
-      {loading ? <p>Lade Dashboard ...</p> : null}
+  return (
+    <section className="page-section app-home">
+      <div className="app-home__hero">
+        <h1>Weiterarbeiten</h1>
+        <p>Oeffne dein letztes Projekt oder waehle direkt eines der aktiven Projekte.</p>
+      </div>
+
+      {loading ? <p>Lade Startseite ...</p> : null}
       {error ? <p className="form-error">{error}</p> : null}
+
       {!loading && !error ? (
         <>
-          <ModuleNavigation modules={modules} />
-          <RecentProjectsPanel projects={projects} />
+          <LastProjectPanel
+            project={lastProject}
+            onOpenProject={handleOpenProject}
+            onGoToProjects={handleGoToProjects}
+            onCreateProject={handleNewProject}
+          />
+
+          <section className="dashboard-section">
+            <div className="page-header">
+              <div>
+                <h2>Aktive Projekte</h2>
+                <p className="action-links-panel__description">
+                  Wenige aktive Projekte bleiben direkt sichtbar statt hinter Suche oder Modulen.
+                </p>
+              </div>
+              <button type="button" className="button button--secondary" onClick={handleGoToProjects}>
+                Alle Projekte
+              </button>
+            </div>
+
+            {activeProjects.length ? (
+              <ProjectList projects={activeProjects} onProjectClick={handleOpenProject} />
+            ) : (
+              <p className="app-home__empty">Noch keine aktiven Projekte vorhanden.</p>
+            )}
+          </section>
+
+          <div className="app-home__secondary-grid">
+            <ActionLinksPanel
+              title="Projektverwaltung"
+              description="Seltene Verwaltungswege bleiben erreichbar, aber klar nachgeordnet."
+              actions={projectManagement}
+            />
+            <ActionLinksPanel
+              title="Stammdaten"
+              description="Globale Daten werden bewusst kleiner und getrennt vom Arbeitsstart gehalten."
+              actions={masterData}
+            />
+          </div>
         </>
       ) : null}
     </section>
