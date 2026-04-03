@@ -134,6 +134,21 @@ const MIGRATIONS = [
     UPDATE meetings SET protocol_label = 'Protokoll' WHERE protocol_label IS NULL OR TRIM(protocol_label) = '';
     `,
   },
+  {
+    id: 3,
+    name: "projects-metadata-fields",
+    sql: `
+    ALTER TABLE projects ADD COLUMN status TEXT;
+    ALTER TABLE projects ADD COLUMN description TEXT;
+    ALTER TABLE projects ADD COLUMN start_date TEXT;
+    ALTER TABLE projects ADD COLUMN end_date TEXT;
+    UPDATE projects
+    SET status = COALESCE(NULLIF(TRIM(status), ''), 'geplant'),
+        description = COALESCE(description, ''),
+        start_date = COALESCE(start_date, ''),
+        end_date = COALESCE(end_date, '');
+    `,
+  },
 ];
 
 export function runMigrations() {

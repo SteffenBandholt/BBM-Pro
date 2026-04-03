@@ -11,6 +11,7 @@ const invoke = (channel, payload = {}) => {
 export const projectsRepo = {
   listProjects: () => invoke("db:projects:list"),
   createProject: (p) => invoke("db:projects:create", p),
+  updateProject: (projectId, patch) => invoke("db:projects:update", { projectId, patch }),
   getProjectById: (id) => invoke("db:projects:list").then((list) => list.find((p) => String(p.id) === String(id)) || null),
 };
 

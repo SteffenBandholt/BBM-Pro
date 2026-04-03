@@ -5,6 +5,21 @@ import {
   updateProject as updateProjectService,
 } from '../services/projectsService.js';
 
+function getProjectMutationErrorMessage(action, err) {
+  const rawMessage = String(err?.message || '').trim();
+  const normalizedMessage = rawMessage.toLowerCase();
+
+  if (normalizedMessage.includes('nicht gefunden') || normalizedMessage.includes('not found')) {
+    return 'Projekt wurde nicht gefunden.';
+  }
+
+  if (action === 'create') {
+    return 'Projekt konnte nicht angelegt werden.';
+  }
+
+  return 'Projekt konnte nicht gespeichert werden.';
+}
+
 export function useProjects() {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,7 +36,8 @@ export function useProjects() {
         if (isActive) {
           setProjects(items);
         }
-      } catch {
+      } catch (err) {
+        console.error('[projects] listProjects failed', err);
         if (isActive) {
           setError('Projekte konnten nicht geladen werden.');
         }
@@ -45,9 +61,11 @@ export function useProjects() {
       setProjects((currentProjects) => [createdProject, ...currentProjects]);
       setError('');
       return createdProject;
-    } catch {
-      setError('Projekt konnte nicht angelegt werden.');
-      throw new Error('Projekt konnte nicht angelegt werden.');
+    } catch (err) {
+      const userMessage = getProjectMutationErrorMessage('create', err);
+      console.error('[projects] createProject failed', { input, err });
+      setError(userMessage);
+      throw new Error(userMessage, { cause: err });
     }
   }, []);
 
@@ -61,9 +79,11 @@ export function useProjects() {
       );
       setError('');
       return updatedProject;
-    } catch {
-      setError('Projekt konnte nicht gespeichert werden.');
-      throw new Error('Projekt konnte nicht gespeichert werden.');
+    } catch (err) {
+      const userMessage = getProjectMutationErrorMessage('update', err);
+      console.error('[projects] updateProject failed', { projectId, input, err });
+      setError(userMessage);
+      throw new Error(userMessage, { cause: err });
     }
   }, []);
 

@@ -15,11 +15,30 @@ export function getProjectById(projectId) {
   return db.projects.find((p) => String(p.id) === String(projectId)) || null;
 }
 
-export function createProject({ name = "", number = "", city = "" } = {}) {
+export function createProject({
+  name = "",
+  number = "",
+  city = "",
+  status = "geplant",
+  description = "",
+  startDate = "",
+  endDate = "",
+} = {}) {
   const db = readDb();
   const id = createId();
   const now = nowIso();
-  const project = { id, name, number, city, created_at: now, updated_at: now };
+  const project = {
+    id,
+    name,
+    number,
+    city,
+    status,
+    description,
+    startDate,
+    endDate,
+    created_at: now,
+    updated_at: now,
+  };
   db.projects = [project, ...db.projects];
   writeDb(db);
   return project;
@@ -35,10 +54,17 @@ export function updateProject(projectId, patch = {}) {
       name: patch.name ?? p.name,
       number: patch.number ?? p.number,
       city: patch.city ?? p.city,
+      status: patch.status ?? p.status ?? "geplant",
+      description: patch.description ?? p.description ?? "",
+      startDate: patch.startDate ?? p.startDate ?? "",
+      endDate: patch.endDate ?? p.endDate ?? "",
       updated_at: nowIso(),
     };
     return updated;
   });
+  if (!updated) {
+    throw new Error("Projekt wurde nicht gefunden.");
+  }
   writeDb(db);
   return updated;
 }

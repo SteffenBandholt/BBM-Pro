@@ -22,6 +22,7 @@ function wrap(handler) {
 export function registerDbIpcHandlers(ipcMain) {
   ipcMain.handle('db:projects:list', wrap(() => projectsRepo.listProjects()));
   ipcMain.handle('db:projects:create', wrap((p) => projectsRepo.createProject(p)));
+  ipcMain.handle('db:projects:update', wrap((p) => projectsRepo.updateProject(p.projectId, p.patch || {})));
 
   ipcMain.handle('db:meetings:list', wrap((p) => meetingsRepo.listByProject(p.projectId)));
   ipcMain.handle('db:meetings:create', wrap((p) => meetingsRepo.createMeeting(p)));

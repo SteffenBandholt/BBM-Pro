@@ -6,8 +6,10 @@ export function normalizeProject(rawProject) {
     city: rawProject.city ?? '',
     status: rawProject.status ?? 'geplant',
     description: rawProject.description ?? '',
-    startDate: rawProject.startDate ?? '',
-    endDate: rawProject.endDate ?? '',
+    startDate: rawProject.startDate ?? rawProject.start_date ?? '',
+    endDate: rawProject.endDate ?? rawProject.end_date ?? '',
+    createdAt: rawProject.createdAt ?? rawProject.created_at ?? '',
+    updatedAt: rawProject.updatedAt ?? rawProject.updated_at ?? '',
   };
 }
 
