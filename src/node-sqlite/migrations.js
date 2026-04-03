@@ -1,5 +1,43 @@
 import { getDb } from "./client.js";
 
+function getTableColumnNames(db, tableName) {
+  return new Set(
+    db.prepare(`PRAGMA table_info(${tableName})`).all().map((column) => column.name),
+  );
+}
+
+function ensureProjectsMetadataColumns(db) {
+  const projectColumns = getTableColumnNames(db, "projects");
+
+  if (!projectColumns.has("status")) {
+    db.exec("ALTER TABLE projects ADD COLUMN status TEXT");
+    projectColumns.add("status");
+  }
+
+  if (!projectColumns.has("description")) {
+    db.exec("ALTER TABLE projects ADD COLUMN description TEXT");
+    projectColumns.add("description");
+  }
+
+  if (!projectColumns.has("start_date")) {
+    db.exec("ALTER TABLE projects ADD COLUMN start_date TEXT");
+    projectColumns.add("start_date");
+  }
+
+  if (!projectColumns.has("end_date")) {
+    db.exec("ALTER TABLE projects ADD COLUMN end_date TEXT");
+    projectColumns.add("end_date");
+  }
+
+  db.exec(`
+    UPDATE projects
+    SET status = COALESCE(NULLIF(TRIM(COALESCE(status, '')), ''), 'geplant'),
+        description = COALESCE(description, ''),
+        start_date = COALESCE(start_date, ''),
+        end_date = COALESCE(end_date, '');
+  `);
+}
+
 // Minimal schema for Protokoll-Modul (projects, meetings, tops, meeting_tops, project_firms, project_persons, meeting_participants)
 const MIGRATIONS = [
   {
@@ -137,17 +175,7 @@ const MIGRATIONS = [
   {
     id: 3,
     name: "projects-metadata-fields",
-    sql: `
-    ALTER TABLE projects ADD COLUMN status TEXT;
-    ALTER TABLE projects ADD COLUMN description TEXT;
-    ALTER TABLE projects ADD COLUMN start_date TEXT;
-    ALTER TABLE projects ADD COLUMN end_date TEXT;
-    UPDATE projects
-    SET status = COALESCE(NULLIF(TRIM(status), ''), 'geplant'),
-        description = COALESCE(description, ''),
-        start_date = COALESCE(start_date, ''),
-        end_date = COALESCE(end_date, '');
-    `,
+    run: ensureProjectsMetadataColumns,
   },
 ];
 
@@ -159,7 +187,16 @@ export function runMigrations() {
   const tx = db.transaction(() => {
     MIGRATIONS.forEach((m) => {
       if (applied.has(m.id)) return;
-      db.exec(m.sql);
+      try {
+        if (typeof m.run === "function") {
+          m.run(db);
+        } else {
+          db.exec(m.sql);
+        }
+      } catch (err) {
+        console.error("[sqlite] migration failed", { id: m.id, name: m.name, err });
+        throw err;
+      }
       db.prepare("INSERT INTO migrations (id, name, applied_at) VALUES (?, ?, ?)").run(m.id, m.name, now);
     });
   });

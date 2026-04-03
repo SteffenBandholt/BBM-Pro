@@ -1,13 +1,20 @@
 import { getDb } from "../client.js";
+import { runMigrations } from "../migrations.js";
 import { nowIso } from "../../services/utils/time.js";
 import { createId } from "../../services/utils/id.js";
 
+function ensureProjectsSchemaReady() {
+  runMigrations();
+}
+
 export function listProjects() {
+  ensureProjectsSchemaReady();
   const db = getDb();
   return db.prepare(`SELECT * FROM projects ORDER BY created_at DESC`).all();
 }
 
 export function getProjectById(projectId) {
+  ensureProjectsSchemaReady();
   const db = getDb();
   return db.prepare(`SELECT * FROM projects WHERE id = ?`).get(projectId) || null;
 }
@@ -21,6 +28,7 @@ export function createProject({
   startDate = "",
   endDate = "",
 } = {}) {
+  ensureProjectsSchemaReady();
   const db = getDb();
   const id = createId();
   const now = nowIso();
@@ -42,6 +50,7 @@ export function createProject({
 }
 
 export function updateProject(projectId, patch = {}) {
+  ensureProjectsSchemaReady();
   const db = getDb();
   const now = nowIso();
   db.prepare(
