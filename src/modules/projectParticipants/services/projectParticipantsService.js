@@ -169,6 +169,25 @@ export async function updateProjectLocalEmployee({ projectFirmId, employeeId, na
   });
 }
 
+export async function removeProjectLocalEmployee({ projectFirmId, employeeId }) {
+  const [projectFirm, employee] = await Promise.all([
+    projectFirmsRepo.getById(projectFirmId),
+    projectLocalFirmEmployeesRepo.getById(employeeId),
+  ]);
+
+  if (!projectFirm) {
+    throw new Error('Projektfirma wurde nicht gefunden.');
+  }
+  if (!employee) {
+    throw new Error('Projektinterner Mitarbeiter wurde nicht gefunden.');
+  }
+  if (String(employee.project_firm_id) !== String(projectFirmId)) {
+    throw new Error('Projektinterner Mitarbeiter gehoert nicht zu dieser Projektfirma.');
+  }
+
+  return projectLocalFirmEmployeesRepo.removeEmployee(employeeId);
+}
+
 export async function activateProjectEmployee({ projectFirmId, globalEmployeeId }) {
   const [projectFirm, globalEmployee] = await Promise.all([
     projectFirmsRepo.getById(projectFirmId),

@@ -19,6 +19,7 @@ export default function ProjectParticipantsPage() {
     deactivateEmployeeForProject,
     createProjectLocalEmployeeForFirm,
     updateProjectLocalEmployeeForFirm,
+    removeProjectLocalEmployeeForFirm,
   } = useProjectParticipants(projectId);
   const [mode, setMode] = useState(null);
   const [newFirmName, setNewFirmName] = useState('');
@@ -323,6 +324,18 @@ export default function ProjectParticipantsPage() {
                                     }}
                                   >
                                     Bearbeiten
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="button button--secondary"
+                                    onClick={async () => {
+                                      await removeProjectLocalEmployeeForFirm({
+                                        projectFirmId: selectedFirm.id,
+                                        employeeId: employee.id,
+                                      });
+                                    }}
+                                  >
+                                    Loeschen
                                   </button>
                                 </div>
                               </>

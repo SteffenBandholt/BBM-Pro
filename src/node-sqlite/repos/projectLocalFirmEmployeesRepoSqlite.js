@@ -70,3 +70,40 @@ export function updateEmployee({ employeeId, name }) {
 
   return db.prepare(`SELECT * FROM project_local_firm_employees WHERE id = ?`).get(employeeId) || null;
 }
+
+export function removeEmployee(employeeId) {
+  ensureProjectLocalFirmEmployeesSchemaReady();
+  if (!employeeId) {
+    throw new Error("Mitarbeiter fehlt.");
+  }
+
+  const db = getDb();
+  const currentEmployee = getById(employeeId);
+  if (!currentEmployee) {
+    throw new Error("Projektinterner Mitarbeiter wurde nicht gefunden.");
+  }
+
+  const openMeetingParticipant = db
+    .prepare(
+      `SELECT m.id
+       FROM meeting_person_participants participant
+       JOIN meetings m ON m.id = participant.meeting_id
+       WHERE participant.person_kind = 'project_local_employee'
+         AND participant.person_id = ?
+         AND m.is_closed = 0
+       LIMIT 1`,
+    )
+    .get(employeeId);
+  if (openMeetingParticipant) {
+    throw new Error("Projektinterner Mitarbeiter kann nicht geloescht werden, solange er noch Teilnehmer in einer offenen Besprechung ist.");
+  }
+
+  const now = nowIso();
+  db.prepare(
+    `UPDATE project_local_firm_employees
+     SET removed_at = ?, updated_at = ?
+     WHERE id = ? AND removed_at IS NULL`,
+  ).run(now, now, employeeId);
+
+  return db.prepare(`SELECT * FROM project_local_firm_employees WHERE id = ?`).get(employeeId) || null;
+}
