@@ -88,6 +88,11 @@ export const projectFirmEmployeesRepo = {
   deactivateEmployee: (p) => invoke("db:projectFirmEmployees:deactivate", p),
 };
 
+export const projectLocalFirmEmployeesRepo = {
+  listByProjectFirm: (projectFirmId) => invoke("db:projectLocalFirmEmployees:list", { projectFirmId }),
+  createEmployee: (p) => invoke("db:projectLocalFirmEmployees:create", p),
+};
+
 export const meetingParticipantsRepo = {
   listMeetingParticipants: (meetingId) => invoke("db:participants:list", { meetingId }),
   setMeetingParticipant: (p) => invoke("db:participants:set", p),

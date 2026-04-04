@@ -90,6 +90,20 @@ function ensureProjectFirmEmployeesTable(db) {
   `);
 }
 
+function ensureProjectLocalFirmEmployeesTable(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS project_local_firm_employees (
+      id TEXT PRIMARY KEY,
+      project_firm_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      removed_at TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (project_firm_id) REFERENCES project_firms(id) ON DELETE CASCADE
+    );
+  `);
+}
+
 // Minimal schema for Protokoll-Modul (projects, meetings, tops, meeting_tops, project_firms, project_persons, meeting_participants)
 const MIGRATIONS = [
   {
@@ -243,6 +257,11 @@ const MIGRATIONS = [
     id: 7,
     name: "project-firm-employees",
     run: ensureProjectFirmEmployeesTable,
+  },
+  {
+    id: 8,
+    name: "project-local-firm-employees",
+    run: ensureProjectLocalFirmEmployeesTable,
   },
 ];
 

@@ -13,6 +13,7 @@ function defaultDb() {
     globalFirmEmployees: [],
     projectFirms: [],
     projectFirmEmployees: [],
+    projectLocalFirmEmployees: [],
     projectPersons: [],
     meetingParticipants: [],
   };
@@ -40,6 +41,7 @@ function readRaw() {
       globalFirmEmployees: parsed.globalFirmEmployees ?? [],
       projectFirms: parsed.projectFirms ?? [],
       projectFirmEmployees: parsed.projectFirmEmployees ?? [],
+      projectLocalFirmEmployees: parsed.projectLocalFirmEmployees ?? [],
       projectPersons: parsed.projectPersons ?? [],
       meetingParticipants: parsed.meetingParticipants ?? [],
     };
@@ -68,6 +70,7 @@ export function readDb() {
     globalFirmEmployees: [...db.globalFirmEmployees],
     projectFirms: [...db.projectFirms],
     projectFirmEmployees: [...db.projectFirmEmployees],
+    projectLocalFirmEmployees: [...db.projectLocalFirmEmployees],
     projectPersons: [...db.projectPersons],
     meetingParticipants: [...db.meetingParticipants],
   };

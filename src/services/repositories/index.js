@@ -53,6 +53,7 @@ function loadSqlite() {
     const globalFirmEmployees = req("globalFirmEmployeesRepoSqlite.js");
     const firms = req("projectFirmsRepoSqlite.js");
     const projectFirmEmployees = req("projectFirmEmployeesRepoSqlite.js");
+    const projectLocalFirmEmployees = req("projectLocalFirmEmployeesRepoSqlite.js");
     const persons = req("projectPersonsRepoSqlite.js");
     const participants = req("meetingParticipantsRepoSqlite.js");
     sqliteRepos = {
@@ -64,6 +65,7 @@ function loadSqlite() {
       globalFirmEmployeesRepo: globalFirmEmployees,
       projectFirmsRepo: firms,
       projectFirmEmployeesRepo: projectFirmEmployees,
+      projectLocalFirmEmployeesRepo: projectLocalFirmEmployees,
       projectPersonsRepo: persons,
       meetingParticipantsRepo: participants,
     };
@@ -88,6 +90,7 @@ import * as localGlobalFirmsRepo from "./globalFirmsRepo.js";
 import * as localGlobalFirmEmployeesRepo from "./globalFirmEmployeesRepo.js";
 import * as localProjectFirmsRepo from "./projectFirmsRepo.js";
 import * as localProjectFirmEmployeesRepo from "./projectFirmEmployeesRepo.js";
+import * as localProjectLocalFirmEmployeesRepo from "./projectLocalFirmEmployeesRepo.js";
 import * as localProjectPersonsRepo from "./projectPersonsRepo.js";
 import * as localMeetingParticipantsRepo from "./meetingParticipantsRepo.js";
 
@@ -119,6 +122,7 @@ export function getRepos() {
     globalFirmEmployeesRepo: localGlobalFirmEmployeesRepo,
     projectFirmsRepo: localProjectFirmsRepo,
     projectFirmEmployeesRepo: localProjectFirmEmployeesRepo,
+    projectLocalFirmEmployeesRepo: localProjectLocalFirmEmployeesRepo,
     projectPersonsRepo: localProjectPersonsRepo,
     meetingParticipantsRepo: localMeetingParticipantsRepo,
   };

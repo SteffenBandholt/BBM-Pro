@@ -3,6 +3,7 @@ import {
   activateProjectEmployee,
   assignGlobalFirmToProject,
   createProjectFirm as createProjectFirmService,
+  createProjectLocalEmployee as createProjectLocalEmployeeService,
   deactivateProjectEmployee,
   listProjectParticipants,
   removeProjectFirm as removeProjectFirmService,
@@ -125,6 +126,20 @@ export function useProjectParticipants(projectId) {
     }
   };
 
+  const createProjectLocalEmployeeForFirm = async ({ projectFirmId, name }) => {
+    try {
+      setError('');
+      await createProjectLocalEmployeeService({ projectFirmId, name });
+      const items = await loadProjectParticipants();
+      setSelectedFirm(items.find((item) => String(item.id) === String(projectFirmId)) || null);
+      return true;
+    } catch (err) {
+      console.error('[project-participants] create local employee failed', err);
+      setError(err?.message || 'Projektinterner Mitarbeiter konnte nicht angelegt werden.');
+      return false;
+    }
+  };
+
   return {
     firms,
     selectedFirm,
@@ -136,5 +151,6 @@ export function useProjectParticipants(projectId) {
     removeFirmFromProject,
     activateEmployeeForProject,
     deactivateEmployeeForProject,
+    createProjectLocalEmployeeForFirm,
   };
 }

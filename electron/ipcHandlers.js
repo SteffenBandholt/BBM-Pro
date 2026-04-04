@@ -7,6 +7,7 @@ import {
   globalFirmEmployeesRepo,
   projectFirmsRepo,
   projectFirmEmployeesRepo,
+  projectLocalFirmEmployeesRepo,
   projectPersonsRepo,
   meetingParticipantsRepo,
 } from '../src/node-sqlite/repos/index.js';
@@ -65,6 +66,8 @@ export function registerDbIpcHandlers(ipcMain) {
   ipcMain.handle('db:projectFirmEmployees:list', wrap((p) => projectFirmEmployeesRepo.listByProjectFirm(p.projectFirmId)));
   ipcMain.handle('db:projectFirmEmployees:activate', wrap((p) => projectFirmEmployeesRepo.activateEmployee(p)));
   ipcMain.handle('db:projectFirmEmployees:deactivate', wrap((p) => projectFirmEmployeesRepo.deactivateEmployee(p)));
+  ipcMain.handle('db:projectLocalFirmEmployees:list', wrap((p) => projectLocalFirmEmployeesRepo.listByProjectFirm(p.projectFirmId)));
+  ipcMain.handle('db:projectLocalFirmEmployees:create', wrap((p) => projectLocalFirmEmployeesRepo.createEmployee(p)));
 
   ipcMain.handle('db:persons:list', wrap((p) => projectPersonsRepo.listByProject(p.projectId)));
 

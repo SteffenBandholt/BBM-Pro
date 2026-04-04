@@ -5,41 +5,61 @@ const {
   globalFirmsRepo,
   projectFirmsRepo,
   projectFirmEmployeesRepo,
+  projectLocalFirmEmployeesRepo,
 } = getRepos();
 
-function mapEmployeeToUi(employee, { active = false } = {}) {
+function sortByName(a, b) {
+  return (a.name || '').localeCompare(b.name || '');
+}
+
+function mapGlobalEmployeeToUi(employee, { active = false } = {}) {
   return {
     id: employee.id,
     name: employee.name || 'Mitarbeiter',
     active,
+    source: 'global',
   };
 }
 
-function mapProjectFirmToUi(firm, employees = []) {
+function mapProjectLocalEmployeeToUi(employee) {
+  return {
+    id: employee.id,
+    name: employee.name || 'Mitarbeiter',
+    source: 'project-local',
+  };
+}
+
+function mapProjectFirmToUi(firm, { availableGlobalEmployees = [], activeGlobalEmployees = [], projectLocalEmployees = [] } = {}) {
+  const projectEmployees = [...activeGlobalEmployees, ...projectLocalEmployees].sort(sortByName);
   return {
     id: firm.id,
     name: firm.name || 'Firma',
     type: firm.global_firm_id ? 'global' : 'project',
     globalFirmId: firm.global_firm_id || null,
-    employees,
-    activeEmployees: employees.filter((employee) => employee.active),
+    employees: availableGlobalEmployees,
+    activeEmployees: activeGlobalEmployees,
+    projectLocalEmployees,
+    projectEmployees,
+    projectEmployeeCount: projectEmployees.length,
   };
 }
 
 async function loadEmployeesForProjectFirm(firm) {
-  if (!firm.global_firm_id) {
-    return [];
-  }
-
-  const [globalEmployees, activeEmployees] = await Promise.all([
-    globalFirmEmployeesRepo.listByFirm(firm.global_firm_id),
+  const [projectLocalEmployees, activeEmployeeRows, globalEmployees] = await Promise.all([
+    projectLocalFirmEmployeesRepo.listByProjectFirm(firm.id),
     projectFirmEmployeesRepo.listByProjectFirm(firm.id),
+    firm.global_firm_id ? globalFirmEmployeesRepo.listByFirm(firm.global_firm_id) : Promise.resolve([]),
   ]);
-  const activeEmployeeIds = new Set(activeEmployees.map((employee) => String(employee.global_employee_id)));
+  const activeEmployeeIds = new Set(activeEmployeeRows.map((employee) => String(employee.global_employee_id)));
+  const availableGlobalEmployees = globalEmployees
+    .map((employee) => mapGlobalEmployeeToUi(employee, { active: activeEmployeeIds.has(String(employee.id)) }))
+    .sort(sortByName);
 
-  return globalEmployees.map((employee) =>
-    mapEmployeeToUi(employee, { active: activeEmployeeIds.has(String(employee.id)) }),
-  );
+  return {
+    availableGlobalEmployees,
+    activeGlobalEmployees: availableGlobalEmployees.filter((employee) => employee.active),
+    projectLocalEmployees: projectLocalEmployees.map(mapProjectLocalEmployeeToUi).sort(sortByName),
+  };
 }
 
 export async function listProjectParticipants(projectId) {
@@ -86,6 +106,19 @@ export async function assignGlobalFirmToProject({ projectId, globalFirmId }) {
 
 export async function removeProjectFirm(projectFirmId) {
   return projectFirmsRepo.removeFirm(projectFirmId);
+}
+
+export async function createProjectLocalEmployee({ projectFirmId, name }) {
+  const projectFirm = await projectFirmsRepo.getById(projectFirmId);
+
+  if (!projectFirm) {
+    throw new Error('Projektfirma wurde nicht gefunden.');
+  }
+
+  return projectLocalFirmEmployeesRepo.createEmployee({
+    projectFirmId,
+    name,
+  });
 }
 
 export async function activateProjectEmployee({ projectFirmId, globalEmployeeId }) {

@@ -16,9 +16,11 @@ export default function ProjectParticipantsPage() {
     removeFirmFromProject,
     activateEmployeeForProject,
     deactivateEmployeeForProject,
+    createProjectLocalEmployeeForFirm,
   } = useProjectParticipants(projectId);
   const [mode, setMode] = useState(null);
   const [newFirmName, setNewFirmName] = useState('');
+  const [newProjectLocalEmployeeName, setNewProjectLocalEmployeeName] = useState('');
   const [globalFirms, setGlobalFirms] = useState([]);
 
   useEffect(() => {
@@ -149,7 +151,7 @@ export default function ProjectParticipantsPage() {
                     >
                       <span className="project-participants__firm-name">{firm.name}</span>
                       <span className="project-participants__firm-meta">
-                        {firm.activeEmployees?.length || 0} Mitarbeiter im Projekt aktiv
+                        {firm.projectEmployeeCount || 0} Projektmitarbeiter
                       </span>
                     </button>
                   </li>
@@ -185,13 +187,65 @@ export default function ProjectParticipantsPage() {
                 </div>
 
                 <div>
-                  <p className="project-participants__label">Mitarbeiter im Projekt</p>
+                  <p className="project-participants__label">Projektinterne Mitarbeiter</p>
+                  {selectedFirm.projectLocalEmployees?.length ? (
+                    <ul className="project-participants__employees">
+                      {selectedFirm.projectLocalEmployees.map((employee) => (
+                        <li key={employee.id}>
+                          <article className="project-participants__employee-card">
+                            <p className="project-participants__employee-name">{employee.name}</p>
+                            <p className="project-participants__employee-role">Nur in diesem Projekt</p>
+                          </article>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p>Noch keine projektinternen Mitarbeiter angelegt.</p>
+                  )}
+                </div>
+
+                <div>
+                  <section className="project-participants__panel">
+                    <h3>Projektinternen Mitarbeiter anlegen</h3>
+                    <label className="field">
+                      <span>Name</span>
+                      <input
+                        value={newProjectLocalEmployeeName}
+                        onChange={(event) => setNewProjectLocalEmployeeName(event.target.value)}
+                        placeholder="Name des projektinternen Mitarbeiters"
+                      />
+                    </label>
+                    <div className="form-actions">
+                      <button
+                        type="button"
+                        className="button"
+                        onClick={async () => {
+                          const trimmedName = newProjectLocalEmployeeName.trim();
+                          if (!trimmedName) return;
+                          const created = await createProjectLocalEmployeeForFirm({
+                            projectFirmId: selectedFirm.id,
+                            name: trimmedName,
+                          });
+                          if (created) {
+                            setNewProjectLocalEmployeeName('');
+                          }
+                        }}
+                      >
+                        Mitarbeiter anlegen
+                      </button>
+                    </div>
+                  </section>
+                </div>
+
+                <div>
+                  <p className="project-participants__label">Globale Mitarbeiter im Projekt</p>
                   {selectedFirm.activeEmployees?.length ? (
                     <ul className="project-participants__employees">
                       {selectedFirm.activeEmployees.map((employee) => (
                         <li key={employee.id}>
                           <article className="project-participants__employee-card">
                             <p className="project-participants__employee-name">{employee.name}</p>
+                            <p className="project-participants__employee-role">Aus globalem Firmenstamm</p>
                             <div className="form-actions">
                               <button
                                 type="button"
@@ -211,12 +265,12 @@ export default function ProjectParticipantsPage() {
                       ))}
                     </ul>
                   ) : (
-                    <p>Noch keine Mitarbeiter im Projekt aktiviert.</p>
+                    <p>Noch keine globalen Mitarbeiter im Projekt aktiviert.</p>
                   )}
                 </div>
 
                 <div>
-                  <p className="project-participants__label">Moegliche Firmenmitarbeiter</p>
+                  <p className="project-participants__label">Moegliche globale Firmenmitarbeiter</p>
                   {!selectedFirm.globalFirmId ? (
                     <p>Diese Projektfirma ist nicht mit einem globalen Firmenstamm verknuepft.</p>
                   ) : selectedFirm.employees?.length ? (
@@ -225,6 +279,7 @@ export default function ProjectParticipantsPage() {
                         <li key={employee.id}>
                           <article className="project-participants__employee-card">
                             <p className="project-participants__employee-name">{employee.name}</p>
+                            <p className="project-participants__employee-role">Aus globalem Firmenstamm</p>
                             <div className="form-actions">
                               {employee.active ? (
                                 <button
