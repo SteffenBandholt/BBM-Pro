@@ -23,6 +23,10 @@ export default function ProjectMeetingsPage() {
       date,
     });
 
+    if (!newMeeting?.id) {
+      return;
+    }
+
     setKeyword('');
     setDate(todayIso());
     setIsCreating(false);

@@ -40,9 +40,15 @@ export function useMeetings(projectId) {
   }, [projectId]);
 
   const createMeeting = async (input) => {
-    const newMeeting = await createMeetingService(projectId, input);
-    setMeetings((currentMeetings) => [newMeeting, ...currentMeetings]);
-    return newMeeting;
+    try {
+      setError('');
+      const newMeeting = await createMeetingService(projectId, input);
+      setMeetings((currentMeetings) => [newMeeting, ...currentMeetings]);
+      return newMeeting;
+    } catch (err) {
+      setError(err?.message || 'Besprechung konnte nicht angelegt werden.');
+      return null;
+    }
   };
 
   const updateMeetingKeyword = async (meetingId, keyword) => {
