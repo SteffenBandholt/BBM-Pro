@@ -88,7 +88,7 @@ function ProtocolTopRow({ top, selectedTopId, onSelectTop, collapsedTopIds, onTo
                   <span className={trafficLightClass} aria-hidden="true" />
                 </span>
                 <span className="protocol-top-row__meta">{top.status}</span>
-                <span className="protocol-top-row__meta">{top.responsible || 'offen'}</span>
+                <span className="protocol-top-row__meta">{top.responsibleLabel || 'offen'}</span>
               </span>
             )}
           </button>

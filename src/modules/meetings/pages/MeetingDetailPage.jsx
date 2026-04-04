@@ -4,7 +4,6 @@ import {
   buildMeetingTopTree,
   findMeetingTopNodeById,
   canMoveMeetingTop,
-  getMeetingTopMoveTargetOptions,
 } from '../data/meetingTopModel.js';
 import { clampTopLongtextInput, clampTopTitleInput } from '../../../services/tops/topTextLimits.js';
 import {
@@ -57,7 +56,7 @@ function mapRowToUi(row) {
     parentTopId: row.parent_top_id ?? null,
     number: Number(row.number) || 1,
     projectId: row.project_id,
-    responsible: row.responsible_label || '',
+    responsibleLabel: row.responsible_label || '',
     responsibleId: row.responsible_id || null,
   };
 }
@@ -99,7 +98,6 @@ export default function MeetingDetailPage() {
     longtext: '',
     dueDate: '',
     status: 'offen',
-    responsible: '',
     responsibleId: '',
     isImportant: false,
     level: 1,
@@ -336,7 +334,6 @@ export default function MeetingDetailPage() {
       longtext: top.longtext || '',
       dueDate: top.dueDate || '',
       status: top.status || 'offen',
-      responsible: top.responsibleLabel || top.responsible || '',
       responsibleId: top.responsibleId || '',
       isImportant: Boolean(top.isImportant),
     });
@@ -357,7 +354,6 @@ export default function MeetingDetailPage() {
       longtext: '',
       dueDate: '',
       status: 'offen',
-      responsible: '',
       responsibleId: '',
       isImportant: false,
     });
@@ -389,7 +385,6 @@ export default function MeetingDetailPage() {
         longtext: '',
         dueDate: todayIso(),
         status: 'offen',
-        responsible: '',
         responsibleId: '',
         isImportant: false,
       });
@@ -403,7 +398,6 @@ export default function MeetingDetailPage() {
           longtext: '',
           dueDate: todayIso(),
           status: 'offen',
-          responsible: '',
           responsibleId: '',
           isImportant: false,
         });
@@ -421,7 +415,6 @@ export default function MeetingDetailPage() {
         longtext: '',
         dueDate: todayIso(),
         status: 'offen',
-        responsible: '',
         responsibleId: '',
         isImportant: false,
       });
@@ -504,7 +497,6 @@ export default function MeetingDetailPage() {
       longtext: '',
       dueDate: '',
       status: 'offen',
-      responsible: '',
       responsibleId: '',
       isImportant: false,
       level: 1,

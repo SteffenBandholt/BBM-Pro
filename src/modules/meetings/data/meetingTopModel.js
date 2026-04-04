@@ -150,10 +150,9 @@ function normalizeTop(top) {
     dueDate: top.dueDate ?? null,
     responsibleId: top.responsibleId ?? top.responsible_id ?? null,
     responsibleKind: top.responsibleKind ?? top.responsible_kind ?? null,
-    responsibleLabel: top.responsibleLabel ?? top.responsible_label ?? top.responsible ?? '',
+    responsibleLabel: top.responsibleLabel ?? top.responsible_label ?? '',
     createdAt: top.createdAt ?? DEFAULT_CREATED_AT,
     ampel: top.ampel ?? 'gelb',
-    responsible: top.responsible ?? '',
     status: lifecycleStatus,
     isCarriedOver: Boolean(top.isCarriedOver),
     isHidden: lifecycleStatus === 'hidden' || Boolean(top.isHidden),
@@ -267,7 +266,7 @@ export function createEmptyTopDraft() {
     dueDate: '',
     createdAt: DEFAULT_CREATED_AT,
     ampel: 'gelb',
-    responsible: '',
+    responsibleId: '',
     status: 'neu',
     isImportant: false,
     isHidden: false,
@@ -352,7 +351,9 @@ export function addMeetingTop(tops, draft) {
     dueDate: draft.dueDate || null,
     createdAt: draft.createdAt || DEFAULT_CREATED_AT,
     ampel: draft.ampel ?? 'gelb',
-    responsible: draft.responsible?.trim() ?? '',
+    responsibleId: draft.responsibleId ?? null,
+    responsibleKind: draft.responsibleKind ?? null,
+    responsibleLabel: draft.responsibleLabel ?? '',
     status: draft.isHidden
       ? 'hidden'
       : TOP_STATUS_VALUES.has(draft.status)
@@ -397,9 +398,8 @@ export function updateMeetingTop(tops, topId, draft) {
       dueDate: draft.dueDate || null,
       responsibleId: draft.responsibleId ?? top.responsibleId ?? top.responsible_id ?? null,
       responsibleKind: draft.responsible_kind ?? draft.responsibleKind ?? top.responsibleKind ?? top.responsible_kind ?? null,
-      responsibleLabel: draft.responsible_label ?? top.responsibleLabel ?? top.responsible_label ?? top.responsible ?? '',
+      responsibleLabel: draft.responsible_label ?? draft.responsibleLabel ?? top.responsibleLabel ?? top.responsible_label ?? '',
       ampel: draft.ampel ?? top.ampel ?? 'gelb',
-      responsible: draft.responsible?.trim() ?? top.responsible ?? '',
       status: nextStatus,
       isHidden: Boolean(draft.isHidden) || nextStatus === 'hidden',
       isTrashed: nextStatus === 'trashed',
@@ -481,7 +481,7 @@ export function moveMeetingTop(tops, topId, targetParentId) {
           number: nextNumber,
           responsibleId: top.responsibleId ?? top.responsible_id ?? null,
           responsibleKind: top.responsibleKind ?? top.responsible_kind ?? null,
-          responsibleLabel: top.responsibleLabel ?? top.responsible_label ?? top.responsible ?? '',
+          responsibleLabel: top.responsibleLabel ?? top.responsible_label ?? '',
         }
       : top,
   );

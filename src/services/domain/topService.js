@@ -26,6 +26,28 @@ export async function listByMeeting(meetingId) {
   return meetingTopsRepo.listJoinedByMeeting(meetingId);
 }
 
+function clearResponsible(next) {
+  next.responsible_kind = null;
+  next.responsible_id = null;
+  next.responsible_label = null;
+}
+
+async function resolveResponsibleFirmForMeeting(meeting, responsibleId) {
+  if (!responsibleId) {
+    throw new Error("Verantwortliche Firma fehlt");
+  }
+
+  const firm = await projectFirmsRepo.getById(responsibleId);
+  if (!firm) {
+    throw new Error("Verantwortliche Firma existiert nicht");
+  }
+  if (String(firm.project_id) !== String(meeting.project_id)) {
+    throw new Error("Verantwortliche Firma gehoert nicht zu diesem Projekt");
+  }
+
+  return firm;
+}
+
 export async function createTop({ projectId, meetingId, parentTopId = null, level, title }) {
   if (!projectId) throw new Error("projectId required");
   if (!meetingId) throw new Error("meetingId required");
@@ -137,7 +159,7 @@ function detectTouched(prev, patch) {
 }
 
 export async function updateMeetingFields({ meetingId, topId, patch }) {
-  await assertOpenMeeting(meetingId);
+  const meeting = await assertOpenMeeting(meetingId);
   const mt = await meetingTopsRepo.getMeetingTop(meetingId, topId);
   if (!mt) throw new Error("TOP not in meeting");
 
@@ -175,20 +197,14 @@ export async function updateMeetingFields({ meetingId, topId, patch }) {
   }
 
   if (mt.level === 1) {
-    next.responsible_kind = null;
-    next.responsible_id = null;
-    next.responsible_label = null;
+    clearResponsible(next);
   } else if (patch.responsible_kind !== undefined || patch.responsible_id !== undefined || patch.responsible_label !== undefined) {
     const kind = patch.responsible_kind ?? patch.responsibleKind ?? mt.responsible_kind ?? null;
     const responsibleId = patch.responsible_id ?? patch.responsibleId ?? mt.responsible_id ?? null;
     if (kind === null) {
-      next.responsible_kind = null;
-      next.responsible_id = null;
-      next.responsible_label = null;
+      clearResponsible(next);
     } else if (kind === "firm") {
-      if (!responsibleId) throw new Error("Verantwortliche Firma fehlt");
-      const firm = await projectFirmsRepo.getById(responsibleId);
-      if (!firm) throw new Error("Verantwortliche Firma existiert nicht");
+      const firm = await resolveResponsibleFirmForMeeting(meeting, responsibleId);
       next.responsible_kind = "firm";
       next.responsible_id = firm.id;
       next.responsible_label = firm.name;
