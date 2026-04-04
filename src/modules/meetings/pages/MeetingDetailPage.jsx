@@ -104,7 +104,7 @@ export default function MeetingDetailPage() {
     parentTopId: null,
   });
 
-  const loadFirmsAndParticipants = async (projectId) => {
+  const loadMeetingContext = async (projectId) => {
     if (!projectId) return;
     const firmRows = await listProjectFirms(projectId);
     setFirms(firmRows);
@@ -126,7 +126,7 @@ export default function MeetingDetailPage() {
             title: m.title || '',
             created_at: m.created_at || null,
           });
-          await loadFirmsAndParticipants(m.project_id);
+          await loadMeetingContext(m.project_id);
           const rows = await listMeetingTops(meetingId);
           setTops(rows.map(mapRowToUi));
         } else {
