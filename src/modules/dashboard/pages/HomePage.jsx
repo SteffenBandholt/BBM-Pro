@@ -5,7 +5,6 @@ import { useAppHome } from '../hooks/useAppHome.js';
 import ProjectList from '../../projects/components/ProjectList.jsx';
 import { createMeeting, listMeetings } from '../../meetings/services/meetingsService.js';
 import {
-  getProjectLatestMeeting,
   getProjectOpenMeeting,
 } from '../../projects/services/projectStartService.js';
 
@@ -36,15 +35,9 @@ export default function HomePage() {
 
     const meetings = await listMeetings(project.id);
     const openMeeting = getProjectOpenMeeting(meetings);
-    const latestMeeting = getProjectLatestMeeting(meetings);
 
     if (openMeeting?.id) {
       navigate(`/meetings/${openMeeting.id}`);
-      return;
-    }
-
-    if (latestMeeting?.id) {
-      navigate(`/meetings/${latestMeeting.id}`);
       return;
     }
 
