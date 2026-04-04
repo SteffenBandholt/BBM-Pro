@@ -7,6 +7,7 @@ import {
   deactivateProjectEmployee,
   listProjectParticipants,
   removeProjectFirm as removeProjectFirmService,
+  updateProjectFirm as updateProjectFirmService,
   updateProjectLocalEmployee as updateProjectLocalEmployeeService,
 } from '../services/projectParticipantsService.js';
 
@@ -59,6 +60,20 @@ export function useProjectParticipants(projectId) {
     } catch (err) {
       console.error('[project-participants] create failed', err);
       setError(err?.message || 'Projektfirma konnte nicht angelegt werden.');
+      return null;
+    }
+  };
+
+  const updateProjectFirm = async ({ projectFirmId, name }) => {
+    try {
+      setError('');
+      const updatedFirm = await updateProjectFirmService({ projectFirmId, name });
+      const items = await loadProjectParticipants();
+      setSelectedFirm(items.find((item) => String(item.id) === String(updatedFirm.id)) || null);
+      return updatedFirm;
+    } catch (err) {
+      console.error('[project-participants] update firm failed', err);
+      setError(err?.message || 'Projektfirma konnte nicht bearbeitet werden.');
       return null;
     }
   };
@@ -162,6 +177,7 @@ export function useProjectParticipants(projectId) {
     loading,
     error,
     createProjectFirm,
+    updateProjectFirm,
     assignGlobalFirm,
     removeFirmFromProject,
     activateEmployeeForProject,

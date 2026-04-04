@@ -81,6 +81,23 @@ export async function createProjectFirm({ projectId, name, shortLabel = '' }) {
   });
 }
 
+export async function updateProjectFirm({ projectFirmId, name }) {
+  const projectFirm = await projectFirmsRepo.getById(projectFirmId);
+
+  if (!projectFirm) {
+    throw new Error('Projektfirma wurde nicht gefunden.');
+  }
+  if (projectFirm.global_firm_id) {
+    throw new Error('Globale Projektfirmen werden in diesem Schritt nicht bearbeitet.');
+  }
+
+  return projectFirmsRepo.updateFirm({
+    firmId: projectFirmId,
+    name,
+    shortLabel: name,
+  });
+}
+
 export async function assignGlobalFirmToProject({ projectId, globalFirmId }) {
   const globalFirm = await globalFirmsRepo.getById(globalFirmId);
   if (!globalFirm) {

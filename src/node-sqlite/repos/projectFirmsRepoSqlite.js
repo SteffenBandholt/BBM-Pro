@@ -41,6 +41,37 @@ export function createFirm({ projectId, name, shortLabel = "", globalFirmId = nu
   return getById(id);
 }
 
+export function updateFirm({ firmId, name, shortLabel = undefined }) {
+  ensureProjectFirmsSchemaReady();
+  const trimmedName = String(name || "").trim();
+  if (!firmId) {
+    throw new Error("Projektfirma fehlt.");
+  }
+  if (!trimmedName) {
+    throw new Error("Firmenname fehlt.");
+  }
+
+  const db = getDb();
+  const currentFirm = getById(firmId);
+  if (!currentFirm) {
+    throw new Error("Projektfirma wurde nicht gefunden.");
+  }
+
+  const now = nowIso();
+  db.prepare(
+    `UPDATE project_firms
+     SET name = ?, short_label = ?, updated_at = ?
+     WHERE id = ? AND removed_at IS NULL`,
+  ).run(
+    trimmedName,
+    shortLabel === undefined ? currentFirm.short_label : String(shortLabel || "").trim() || trimmedName,
+    now,
+    firmId,
+  );
+
+  return getById(firmId);
+}
+
 export function removeFirm(firmId) {
   ensureProjectFirmsSchemaReady();
   const db = getDb();

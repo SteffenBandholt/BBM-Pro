@@ -63,6 +63,7 @@ export const projectFirmsRepo = {
   listByProject: (projectId) => invoke("db:firms:list", { projectId }),
   getById: (firmId) => invoke("db:firms:get", { firmId }),
   createFirm: (p) => invoke("db:firms:create", p),
+  updateFirm: (p) => invoke("db:firms:update", p),
   removeFirm: (firmId) => invoke("db:firms:remove", { firmId }),
 };
 

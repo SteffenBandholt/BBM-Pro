@@ -34,6 +34,41 @@ export function createFirm({ projectId, name, shortLabel = "", globalFirmId = nu
   return firm;
 }
 
+export function updateFirm({ firmId, name, shortLabel = undefined }) {
+  const trimmedName = String(name || "").trim();
+  if (!firmId) {
+    throw new Error("Projektfirma fehlt.");
+  }
+  if (!trimmedName) {
+    throw new Error("Firmenname fehlt.");
+  }
+
+  const db = readDb();
+  const now = nowIso();
+  let updatedFirm = null;
+
+  db.projectFirms = (db.projectFirms || []).map((firm) => {
+    if (String(firm.id) !== String(firmId) || firm.removed_at) {
+      return firm;
+    }
+
+    updatedFirm = {
+      ...firm,
+      name: trimmedName,
+      short_label: shortLabel === undefined ? firm.short_label : String(shortLabel || "").trim() || trimmedName,
+      updated_at: now,
+    };
+    return updatedFirm;
+  });
+
+  if (!updatedFirm) {
+    throw new Error("Projektfirma wurde nicht gefunden.");
+  }
+
+  writeDb(db);
+  return updatedFirm;
+}
+
 export function removeFirm(firmId) {
   const db = readDb();
   const now = nowIso();

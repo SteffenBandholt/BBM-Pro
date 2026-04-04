@@ -12,6 +12,7 @@ export default function ProjectParticipantsPage() {
     loading,
     error,
     createProjectFirm,
+    updateProjectFirm,
     assignGlobalFirm,
     removeFirmFromProject,
     activateEmployeeForProject,
@@ -21,6 +22,8 @@ export default function ProjectParticipantsPage() {
   } = useProjectParticipants(projectId);
   const [mode, setMode] = useState(null);
   const [newFirmName, setNewFirmName] = useState('');
+  const [editingProjectFirmName, setEditingProjectFirmName] = useState('');
+  const [isEditingProjectFirm, setIsEditingProjectFirm] = useState(false);
   const [newProjectLocalEmployeeName, setNewProjectLocalEmployeeName] = useState('');
   const [editingProjectLocalEmployeeId, setEditingProjectLocalEmployeeId] = useState(null);
   const [editingProjectLocalEmployeeName, setEditingProjectLocalEmployeeName] = useState('');
@@ -50,6 +53,8 @@ export default function ProjectParticipantsPage() {
   useEffect(() => {
     setEditingProjectLocalEmployeeId(null);
     setEditingProjectLocalEmployeeName('');
+    setIsEditingProjectFirm(false);
+    setEditingProjectFirmName(selectedFirm?.name || '');
   }, [selectedFirm?.id]);
 
   return (
@@ -175,11 +180,70 @@ export default function ProjectParticipantsPage() {
             ) : (
               <>
                 <div className="project-participants__card">
-                  <p className="project-participants__label">Visitenkarte</p>
-                  <p className="project-participants__card-title">{selectedFirm.name}</p>
-                  <span className="project-participants__badge">
-                    {selectedFirm.type === 'global' ? 'Aus Stammdaten' : 'Projektfirma'}
-                  </span>
+                  {isEditingProjectFirm ? (
+                    <>
+                      <p className="project-participants__label">Projektfirma bearbeiten</p>
+                      <label className="field">
+                        <span>Firmenname</span>
+                        <input
+                          value={editingProjectFirmName}
+                          onChange={(event) => setEditingProjectFirmName(event.target.value)}
+                          placeholder="Name der Projektfirma"
+                        />
+                      </label>
+                      <div className="form-actions">
+                        <button
+                          type="button"
+                          className="button"
+                          onClick={async () => {
+                            const trimmedName = editingProjectFirmName.trim();
+                            if (!trimmedName) return;
+                            const updated = await updateProjectFirm({
+                              projectFirmId: selectedFirm.id,
+                              name: trimmedName,
+                            });
+                            if (updated) {
+                              setIsEditingProjectFirm(false);
+                            }
+                          }}
+                        >
+                          Speichern
+                        </button>
+                        <button
+                          type="button"
+                          className="button button--secondary"
+                          onClick={() => {
+                            setIsEditingProjectFirm(false);
+                            setEditingProjectFirmName(selectedFirm.name || '');
+                          }}
+                        >
+                          Abbrechen
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="project-participants__label">Visitenkarte</p>
+                      <p className="project-participants__card-title">{selectedFirm.name}</p>
+                      <span className="project-participants__badge">
+                        {selectedFirm.type === 'global' ? 'Aus Stammdaten' : 'Projektfirma'}
+                      </span>
+                      {selectedFirm.type === 'project' ? (
+                        <div className="form-actions">
+                          <button
+                            type="button"
+                            className="button button--secondary"
+                            onClick={() => {
+                              setIsEditingProjectFirm(true);
+                              setEditingProjectFirmName(selectedFirm.name || '');
+                            }}
+                          >
+                            Bearbeiten
+                          </button>
+                        </div>
+                      ) : null}
+                    </>
+                  )}
                 </div>
 
                 <div className="project-participants__actions">

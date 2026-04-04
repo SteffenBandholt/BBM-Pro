@@ -62,6 +62,7 @@ export function registerDbIpcHandlers(ipcMain) {
   ipcMain.handle('db:firms:list', wrap((p) => projectFirmsRepo.listByProject(p.projectId)));
   ipcMain.handle('db:firms:get', wrap((p) => projectFirmsRepo.getById(p.firmId)));
   ipcMain.handle('db:firms:create', wrap((p) => projectFirmsRepo.createFirm(p)));
+  ipcMain.handle('db:firms:update', wrap((p) => projectFirmsRepo.updateFirm(p)));
   ipcMain.handle('db:firms:remove', wrap((p) => projectFirmsRepo.removeFirm(p.firmId)));
   ipcMain.handle('db:projectFirmEmployees:list', wrap((p) => projectFirmEmployeesRepo.listByProjectFirm(p.projectFirmId)));
   ipcMain.handle('db:projectFirmEmployees:activate', wrap((p) => projectFirmEmployeesRepo.activateEmployee(p)));
