@@ -70,7 +70,23 @@ export function updateFirm({ firmId, name, shortLabel = undefined }) {
 }
 
 export function removeFirm(firmId) {
+  if (!firmId) {
+    throw new Error("Projektfirma fehlt.");
+  }
+
   const db = readDb();
+  const currentFirm = (db.projectFirms || []).find((firm) => String(firm.id) === String(firmId) && !firm.removed_at) || null;
+  if (!currentFirm) {
+    throw new Error("Projektfirma wurde nicht gefunden.");
+  }
+
+  const hasProjectLocalEmployees = (db.projectLocalFirmEmployees || []).some(
+    (employee) => String(employee.project_firm_id) === String(firmId) && !employee.removed_at,
+  );
+  if (hasProjectLocalEmployees) {
+    throw new Error("Projektfirma kann nicht geloescht werden, solange noch projektinterne Mitarbeiter zugeordnet sind.");
+  }
+
   const now = nowIso();
   let updatedFirm = null;
 
@@ -86,10 +102,6 @@ export function removeFirm(firmId) {
     };
     return updatedFirm;
   });
-
-  if (!updatedFirm) {
-    throw new Error("Projektfirma wurde nicht gefunden.");
-  }
 
   writeDb(db);
   return updatedFirm;

@@ -246,17 +246,19 @@ export default function ProjectParticipantsPage() {
                   )}
                 </div>
 
-                <div className="project-participants__actions">
-                  <button
-                    type="button"
-                    className="button button--secondary"
-                    onClick={async () => {
-                      await removeFirmFromProject(selectedFirm.id);
-                    }}
-                  >
-                    Aus Projekt entfernen
-                  </button>
-                </div>
+                {selectedFirm.type === 'project' ? (
+                  <div className="project-participants__actions">
+                    <button
+                      type="button"
+                      className="button button--secondary"
+                      onClick={async () => {
+                        await removeFirmFromProject(selectedFirm.id);
+                      }}
+                    >
+                      Aus Projekt entfernen
+                    </button>
+                  </div>
+                ) : null}
 
                 <div>
                   <p className="project-participants__label">Projektinterne Mitarbeiter</p>

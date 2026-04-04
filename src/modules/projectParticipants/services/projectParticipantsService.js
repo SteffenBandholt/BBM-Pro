@@ -122,6 +122,15 @@ export async function assignGlobalFirmToProject({ projectId, globalFirmId }) {
 }
 
 export async function removeProjectFirm(projectFirmId) {
+  const projectFirm = await projectFirmsRepo.getById(projectFirmId);
+
+  if (!projectFirm) {
+    throw new Error('Projektfirma wurde nicht gefunden.');
+  }
+  if (projectFirm.global_firm_id) {
+    throw new Error('Globale Projektfirmen werden in diesem Schritt nicht geloescht.');
+  }
+
   return projectFirmsRepo.removeFirm(projectFirmId);
 }
 

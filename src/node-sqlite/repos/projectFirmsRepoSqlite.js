@@ -74,7 +74,27 @@ export function updateFirm({ firmId, name, shortLabel = undefined }) {
 
 export function removeFirm(firmId) {
   ensureProjectFirmsSchemaReady();
+  if (!firmId) {
+    throw new Error("Projektfirma fehlt.");
+  }
+
   const db = getDb();
+  const currentFirm = getById(firmId);
+  if (!currentFirm) {
+    throw new Error("Projektfirma wurde nicht gefunden.");
+  }
+
+  const projectLocalEmployeeCount = db
+    .prepare(
+      `SELECT COUNT(*) AS count
+       FROM project_local_firm_employees
+       WHERE project_firm_id = ? AND removed_at IS NULL`,
+    )
+    .get(firmId)?.count || 0;
+  if (projectLocalEmployeeCount > 0) {
+    throw new Error("Projektfirma kann nicht geloescht werden, solange noch projektinterne Mitarbeiter zugeordnet sind.");
+  }
+
   const now = nowIso();
   db.prepare(
     `UPDATE project_firms
@@ -83,8 +103,5 @@ export function removeFirm(firmId) {
   ).run(now, now, firmId);
 
   const removedFirm = db.prepare(`SELECT * FROM project_firms WHERE id = ?`).get(firmId) || null;
-  if (!removedFirm) {
-    throw new Error("Projektfirma wurde nicht gefunden.");
-  }
   return removedFirm;
 }
