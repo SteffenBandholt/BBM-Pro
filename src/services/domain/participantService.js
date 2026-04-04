@@ -13,6 +13,10 @@ function participantKey(personKind, personId) {
   return `${personKind}::${personId}`;
 }
 
+function normalizeEmail(value) {
+  return String(value || "").trim();
+}
+
 function sortPoolEntries(a, b) {
   const firmCompare = String(a.firmName || "").localeCompare(String(b.firmName || ""));
   if (firmCompare !== 0) return firmCompare;
@@ -26,6 +30,8 @@ function mapGlobalEmployeeToPool(employee, firm) {
     firmId: firm.id,
     firmName: firm.name || "Firma",
     personName: employee.name || "Mitarbeiter",
+    email: normalizeEmail(employee.email),
+    hasEmail: normalizeEmail(employee.email) !== "",
     source: "global",
   };
 }
@@ -37,6 +43,8 @@ function mapProjectLocalEmployeeToPool(employee, firm) {
     firmId: firm.id,
     firmName: firm.name || "Firma",
     personName: employee.name || "Mitarbeiter",
+    email: normalizeEmail(employee.email),
+    hasEmail: normalizeEmail(employee.email) !== "",
     source: "project-local",
   };
 }
@@ -88,10 +96,12 @@ function mapParticipantRowToUi(poolEntry, participantRow = null) {
     firmId: poolEntry.firmId,
     firmName: poolEntry.firmName,
     personName: poolEntry.personName,
+    email: poolEntry.email,
+    hasEmail: poolEntry.hasEmail,
     source: poolEntry.source,
     isParticipant: !!participantRow,
     is_present: participantRow ? !!participantRow.is_present : false,
-    is_in_distribution: participantRow ? !!participantRow.is_in_distribution : false,
+    is_in_distribution: participantRow ? (poolEntry.hasEmail && !!participantRow.is_in_distribution) : false,
   };
 }
 
@@ -144,8 +154,8 @@ export async function setMeetingParticipant({
     firmId: participant.firmId,
     personName: participant.personName,
     firmName: participant.firmName,
-    is_present,
-    is_in_distribution,
+    is_present: !!is_present,
+    is_in_distribution: participant.hasEmail ? !!is_in_distribution : false,
   });
 }
 
@@ -182,7 +192,7 @@ export async function seedParticipantsFromProject(meetingId, projectId) {
         personName: poolEntry.personName,
         firmName: poolEntry.firmName,
         is_present: !!participantRow.is_present,
-        is_in_distribution: !!participantRow.is_in_distribution,
+        is_in_distribution: poolEntry.hasEmail && !!participantRow.is_in_distribution,
       };
     })
     .filter(Boolean);

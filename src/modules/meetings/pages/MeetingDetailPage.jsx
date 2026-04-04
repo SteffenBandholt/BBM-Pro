@@ -624,8 +624,8 @@ export default function MeetingDetailPage() {
           personKind: participant.personKind,
           personId: participant.personId,
           firmId: participant.firmId,
-          is_present: participant.is_present || false,
-          is_in_distribution: participant.is_in_distribution || false,
+          is_present: true,
+          is_in_distribution: !!participant.hasEmail,
         });
       } else {
         await removeMeetingParticipant({
@@ -642,7 +642,9 @@ export default function MeetingDetailPage() {
         personId: participant.personId,
         firmId: participant.firmId,
         is_present: field === 'is_present' ? value : participant.is_present || false,
-        is_in_distribution: field === 'is_in_distribution' ? value : participant.is_in_distribution || false,
+        is_in_distribution: participant.hasEmail
+          ? (field === 'is_in_distribution' ? value : participant.is_in_distribution || false)
+          : false,
       });
     }
 
@@ -776,7 +778,7 @@ export default function MeetingDetailPage() {
                           onChange={(event) => {
                             void handleToggleParticipant(participant, 'is_in_distribution', event.target.checked);
                           }}
-                          disabled={isMeetingClosed || !participant.isParticipant}
+                          disabled={isMeetingClosed || !participant.isParticipant || !participant.hasEmail}
                         />
                         <span>Verteiler</span>
                       </label>

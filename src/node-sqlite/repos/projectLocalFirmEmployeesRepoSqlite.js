@@ -25,7 +25,7 @@ export function getById(employeeId) {
     .get(employeeId) || null;
 }
 
-export function createEmployee({ projectFirmId, name }) {
+export function createEmployee({ projectFirmId, name, email = "" }) {
   ensureProjectLocalFirmEmployeesSchemaReady();
   const trimmedName = String(name || "").trim();
   if (!projectFirmId) {
@@ -39,14 +39,14 @@ export function createEmployee({ projectFirmId, name }) {
   const id = createId();
   const now = nowIso();
   db.prepare(
-    `INSERT INTO project_local_firm_employees (id, project_firm_id, name, removed_at, created_at, updated_at)
-     VALUES (?, ?, ?, NULL, ?, ?)`,
-  ).run(id, projectFirmId, trimmedName, now, now);
+    `INSERT INTO project_local_firm_employees (id, project_firm_id, name, email, removed_at, created_at, updated_at)
+     VALUES (?, ?, ?, ?, NULL, ?, ?)`,
+  ).run(id, projectFirmId, trimmedName, String(email || "").trim(), now, now);
 
   return db.prepare(`SELECT * FROM project_local_firm_employees WHERE id = ?`).get(id) || null;
 }
 
-export function updateEmployee({ employeeId, name }) {
+export function updateEmployee({ employeeId, name, email = "" }) {
   ensureProjectLocalFirmEmployeesSchemaReady();
   const trimmedName = String(name || "").trim();
   if (!employeeId) {
@@ -60,9 +60,9 @@ export function updateEmployee({ employeeId, name }) {
   const now = nowIso();
   const info = db.prepare(
     `UPDATE project_local_firm_employees
-     SET name = ?, updated_at = ?
+     SET name = ?, email = ?, updated_at = ?
      WHERE id = ? AND removed_at IS NULL`,
-  ).run(trimmedName, now, employeeId);
+  ).run(trimmedName, String(email || "").trim(), now, employeeId);
 
   if (!info.changes) {
     throw new Error("Projektinterner Mitarbeiter wurde nicht gefunden.");

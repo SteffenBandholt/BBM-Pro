@@ -16,7 +16,7 @@ export function getById(employeeId) {
   return items.find((item) => String(item.id) === String(employeeId) && !item.removed_at) || null;
 }
 
-export function createEmployee({ projectFirmId, name }) {
+export function createEmployee({ projectFirmId, name, email = "" }) {
   const trimmedName = String(name || "").trim();
   if (!projectFirmId) {
     throw new Error("Projektfirma fehlt.");
@@ -31,6 +31,7 @@ export function createEmployee({ projectFirmId, name }) {
     id: createId(),
     project_firm_id: projectFirmId,
     name: trimmedName,
+    email: String(email || "").trim(),
     removed_at: null,
     created_at: now,
     updated_at: now,
@@ -41,7 +42,7 @@ export function createEmployee({ projectFirmId, name }) {
   return employee;
 }
 
-export function updateEmployee({ employeeId, name }) {
+export function updateEmployee({ employeeId, name, email = "" }) {
   const trimmedName = String(name || "").trim();
   if (!employeeId) {
     throw new Error("Mitarbeiter fehlt.");
@@ -62,6 +63,7 @@ export function updateEmployee({ employeeId, name }) {
     updatedEmployee = {
       ...employee,
       name: trimmedName,
+      email: String(email || "").trim(),
       updated_at: now,
     };
     return updatedEmployee;

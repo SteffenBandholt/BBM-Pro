@@ -143,10 +143,10 @@ export function useProjectParticipants(projectId) {
     }
   };
 
-  const createProjectLocalEmployeeForFirm = async ({ projectFirmId, name }) => {
+  const createProjectLocalEmployeeForFirm = async ({ projectFirmId, name, email }) => {
     try {
       setError('');
-      await createProjectLocalEmployeeService({ projectFirmId, name });
+      await createProjectLocalEmployeeService({ projectFirmId, name, email });
       const items = await loadProjectParticipants();
       setSelectedFirm(items.find((item) => String(item.id) === String(projectFirmId)) || null);
       return true;
@@ -157,10 +157,10 @@ export function useProjectParticipants(projectId) {
     }
   };
 
-  const updateProjectLocalEmployeeForFirm = async ({ projectFirmId, employeeId, name }) => {
+  const updateProjectLocalEmployeeForFirm = async ({ projectFirmId, employeeId, name, email }) => {
     try {
       setError('');
-      await updateProjectLocalEmployeeService({ projectFirmId, employeeId, name });
+      await updateProjectLocalEmployeeService({ projectFirmId, employeeId, name, email });
       const items = await loadProjectParticipants();
       setSelectedFirm(items.find((item) => String(item.id) === String(projectFirmId)) || null);
       return true;

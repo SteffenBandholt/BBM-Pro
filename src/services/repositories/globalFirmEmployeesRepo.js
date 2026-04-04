@@ -16,7 +16,7 @@ export function getById(employeeId) {
   return employees.find((employee) => String(employee.id) === String(employeeId) && !employee.removed_at) || null;
 }
 
-export function createEmployee({ globalFirmId, name }) {
+export function createEmployee({ globalFirmId, name, email = "" }) {
   const trimmedName = String(name || "").trim();
   if (!globalFirmId) {
     throw new Error("Firma fehlt.");
@@ -31,6 +31,7 @@ export function createEmployee({ globalFirmId, name }) {
     id: createId(),
     global_firm_id: globalFirmId,
     name: trimmedName,
+    email: String(email || "").trim(),
     removed_at: null,
     created_at: now,
     updated_at: now,
@@ -39,4 +40,39 @@ export function createEmployee({ globalFirmId, name }) {
   db.globalFirmEmployees = [...(db.globalFirmEmployees || []), employee];
   writeDb(db);
   return employee;
+}
+
+export function updateEmployee({ employeeId, name, email = "" }) {
+  const trimmedName = String(name || "").trim();
+  if (!employeeId) {
+    throw new Error("Mitarbeiter fehlt.");
+  }
+  if (!trimmedName) {
+    throw new Error("Mitarbeitername fehlt.");
+  }
+
+  const db = readDb();
+  const now = nowIso();
+  let updatedEmployee = null;
+
+  db.globalFirmEmployees = (db.globalFirmEmployees || []).map((employee) => {
+    if (String(employee.id) !== String(employeeId) || employee.removed_at) {
+      return employee;
+    }
+
+    updatedEmployee = {
+      ...employee,
+      name: trimmedName,
+      email: String(email || "").trim(),
+      updated_at: now,
+    };
+    return updatedEmployee;
+  });
+
+  if (!updatedEmployee) {
+    throw new Error("Mitarbeiter wurde nicht gefunden.");
+  }
+
+  writeDb(db);
+  return updatedEmployee;
 }

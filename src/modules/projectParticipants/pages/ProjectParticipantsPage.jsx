@@ -26,8 +26,10 @@ export default function ProjectParticipantsPage() {
   const [editingProjectFirmName, setEditingProjectFirmName] = useState('');
   const [isEditingProjectFirm, setIsEditingProjectFirm] = useState(false);
   const [newProjectLocalEmployeeName, setNewProjectLocalEmployeeName] = useState('');
+  const [newProjectLocalEmployeeEmail, setNewProjectLocalEmployeeEmail] = useState('');
   const [editingProjectLocalEmployeeId, setEditingProjectLocalEmployeeId] = useState(null);
   const [editingProjectLocalEmployeeName, setEditingProjectLocalEmployeeName] = useState('');
+  const [editingProjectLocalEmployeeEmail, setEditingProjectLocalEmployeeEmail] = useState('');
   const [globalFirms, setGlobalFirms] = useState([]);
 
   useEffect(() => {
@@ -54,6 +56,7 @@ export default function ProjectParticipantsPage() {
   useEffect(() => {
     setEditingProjectLocalEmployeeId(null);
     setEditingProjectLocalEmployeeName('');
+    setEditingProjectLocalEmployeeEmail('');
     setIsEditingProjectFirm(false);
     setEditingProjectFirmName(selectedFirm?.name || '');
   }, [selectedFirm?.id]);
@@ -278,6 +281,14 @@ export default function ProjectParticipantsPage() {
                                     placeholder="Name des projektinternen Mitarbeiters"
                                   />
                                 </label>
+                                <label className="field">
+                                  <span>E-Mail</span>
+                                  <input
+                                    value={editingProjectLocalEmployeeEmail}
+                                    onChange={(event) => setEditingProjectLocalEmployeeEmail(event.target.value)}
+                                    placeholder="E-Mail des projektinternen Mitarbeiters"
+                                  />
+                                </label>
                                 <div className="form-actions">
                                   <button
                                     type="button"
@@ -289,10 +300,12 @@ export default function ProjectParticipantsPage() {
                                         projectFirmId: selectedFirm.id,
                                         employeeId: employee.id,
                                         name: trimmedName,
+                                        email: editingProjectLocalEmployeeEmail.trim(),
                                       });
                                       if (updated) {
                                         setEditingProjectLocalEmployeeId(null);
                                         setEditingProjectLocalEmployeeName('');
+                                        setEditingProjectLocalEmployeeEmail('');
                                       }
                                     }}
                                   >
@@ -304,6 +317,7 @@ export default function ProjectParticipantsPage() {
                                     onClick={() => {
                                       setEditingProjectLocalEmployeeId(null);
                                       setEditingProjectLocalEmployeeName('');
+                                      setEditingProjectLocalEmployeeEmail('');
                                     }}
                                   >
                                     Abbrechen
@@ -313,7 +327,9 @@ export default function ProjectParticipantsPage() {
                             ) : (
                               <>
                                 <p className="project-participants__employee-name">{employee.name}</p>
-                                <p className="project-participants__employee-role">Nur in diesem Projekt</p>
+                                <p className="project-participants__employee-role">
+                                  {employee.email || 'Keine E-Mail gepflegt'}
+                                </p>
                                 <div className="form-actions">
                                   <button
                                     type="button"
@@ -321,6 +337,7 @@ export default function ProjectParticipantsPage() {
                                     onClick={() => {
                                       setEditingProjectLocalEmployeeId(employee.id);
                                       setEditingProjectLocalEmployeeName(employee.name || '');
+                                      setEditingProjectLocalEmployeeEmail(employee.email || '');
                                     }}
                                   >
                                     Bearbeiten
@@ -360,6 +377,14 @@ export default function ProjectParticipantsPage() {
                         placeholder="Name des projektinternen Mitarbeiters"
                       />
                     </label>
+                    <label className="field">
+                      <span>E-Mail</span>
+                      <input
+                        value={newProjectLocalEmployeeEmail}
+                        onChange={(event) => setNewProjectLocalEmployeeEmail(event.target.value)}
+                        placeholder="E-Mail des projektinternen Mitarbeiters"
+                      />
+                    </label>
                     <div className="form-actions">
                       <button
                         type="button"
@@ -370,9 +395,11 @@ export default function ProjectParticipantsPage() {
                           const created = await createProjectLocalEmployeeForFirm({
                             projectFirmId: selectedFirm.id,
                             name: trimmedName,
+                            email: newProjectLocalEmployeeEmail.trim(),
                           });
                           if (created) {
                             setNewProjectLocalEmployeeName('');
+                            setNewProjectLocalEmployeeEmail('');
                           }
                         }}
                       >
@@ -390,7 +417,7 @@ export default function ProjectParticipantsPage() {
                         <li key={employee.id}>
                           <article className="project-participants__employee-card">
                             <p className="project-participants__employee-name">{employee.name}</p>
-                            <p className="project-participants__employee-role">Aus globalem Firmenstamm</p>
+                            <p className="project-participants__employee-role">{employee.email || 'Keine E-Mail gepflegt'}</p>
                             <div className="form-actions">
                               <button
                                 type="button"
@@ -424,7 +451,7 @@ export default function ProjectParticipantsPage() {
                         <li key={employee.id}>
                           <article className="project-participants__employee-card">
                             <p className="project-participants__employee-name">{employee.name}</p>
-                            <p className="project-participants__employee-role">Aus globalem Firmenstamm</p>
+                            <p className="project-participants__employee-role">{employee.email || 'Keine E-Mail gepflegt'}</p>
                             <div className="form-actions">
                               {employee.active ? (
                                 <button

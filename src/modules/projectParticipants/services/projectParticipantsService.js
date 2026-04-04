@@ -16,6 +16,7 @@ function mapGlobalEmployeeToUi(employee, { active = false } = {}) {
   return {
     id: employee.id,
     name: employee.name || 'Mitarbeiter',
+    email: employee.email || '',
     active,
     source: 'global',
   };
@@ -25,6 +26,7 @@ function mapProjectLocalEmployeeToUi(employee) {
   return {
     id: employee.id,
     name: employee.name || 'Mitarbeiter',
+    email: employee.email || '',
     source: 'project-local',
   };
 }
@@ -134,7 +136,7 @@ export async function removeProjectFirm(projectFirmId) {
   return projectFirmsRepo.removeFirm(projectFirmId);
 }
 
-export async function createProjectLocalEmployee({ projectFirmId, name }) {
+export async function createProjectLocalEmployee({ projectFirmId, name, email }) {
   const projectFirm = await projectFirmsRepo.getById(projectFirmId);
 
   if (!projectFirm) {
@@ -144,10 +146,11 @@ export async function createProjectLocalEmployee({ projectFirmId, name }) {
   return projectLocalFirmEmployeesRepo.createEmployee({
     projectFirmId,
     name,
+    email,
   });
 }
 
-export async function updateProjectLocalEmployee({ projectFirmId, employeeId, name }) {
+export async function updateProjectLocalEmployee({ projectFirmId, employeeId, name, email }) {
   const [projectFirm, employee] = await Promise.all([
     projectFirmsRepo.getById(projectFirmId),
     projectLocalFirmEmployeesRepo.getById(employeeId),
@@ -166,6 +169,7 @@ export async function updateProjectLocalEmployee({ projectFirmId, employeeId, na
   return projectLocalFirmEmployeesRepo.updateEmployee({
     employeeId,
     name,
+    email,
   });
 }
 

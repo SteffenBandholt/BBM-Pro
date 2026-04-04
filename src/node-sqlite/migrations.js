@@ -104,6 +104,18 @@ function ensureProjectLocalFirmEmployeesTable(db) {
   `);
 }
 
+function ensureParticipantEmailColumns(db) {
+  const globalEmployeeColumns = getTableColumnNames(db, "global_firm_employees");
+  if (!globalEmployeeColumns.has("email")) {
+    db.exec("ALTER TABLE global_firm_employees ADD COLUMN email TEXT");
+  }
+
+  const projectLocalEmployeeColumns = getTableColumnNames(db, "project_local_firm_employees");
+  if (!projectLocalEmployeeColumns.has("email")) {
+    db.exec("ALTER TABLE project_local_firm_employees ADD COLUMN email TEXT");
+  }
+}
+
 function ensureMeetingPersonParticipantsTable(db) {
   db.exec(`
     CREATE TABLE IF NOT EXISTS meeting_person_participants (
@@ -287,6 +299,11 @@ const MIGRATIONS = [
     id: 9,
     name: "meeting-person-participants",
     run: ensureMeetingPersonParticipantsTable,
+  },
+  {
+    id: 10,
+    name: "participant-email-columns",
+    run: ensureParticipantEmailColumns,
   },
 ];
 

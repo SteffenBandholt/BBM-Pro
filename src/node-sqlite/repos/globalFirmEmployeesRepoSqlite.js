@@ -21,7 +21,7 @@ export function getById(employeeId) {
   return db.prepare(`SELECT * FROM global_firm_employees WHERE id = ? AND removed_at IS NULL`).get(employeeId) || null;
 }
 
-export function createEmployee({ globalFirmId, name }) {
+export function createEmployee({ globalFirmId, name, email = "" }) {
   ensureFirmEmployeesSchemaReady();
   const trimmedName = String(name || "").trim();
   if (!globalFirmId) {
@@ -35,9 +35,34 @@ export function createEmployee({ globalFirmId, name }) {
   const id = createId();
   const now = nowIso();
   db.prepare(
-    `INSERT INTO global_firm_employees (id, global_firm_id, name, removed_at, created_at, updated_at)
-     VALUES (?, ?, ?, NULL, ?, ?)`,
-  ).run(id, globalFirmId, trimmedName, now, now);
+    `INSERT INTO global_firm_employees (id, global_firm_id, name, email, removed_at, created_at, updated_at)
+     VALUES (?, ?, ?, ?, NULL, ?, ?)`,
+  ).run(id, globalFirmId, trimmedName, String(email || "").trim(), now, now);
 
   return db.prepare(`SELECT * FROM global_firm_employees WHERE id = ?`).get(id) || null;
+}
+
+export function updateEmployee({ employeeId, name, email = "" }) {
+  ensureFirmEmployeesSchemaReady();
+  const trimmedName = String(name || "").trim();
+  if (!employeeId) {
+    throw new Error("Mitarbeiter fehlt.");
+  }
+  if (!trimmedName) {
+    throw new Error("Mitarbeitername fehlt.");
+  }
+
+  const db = getDb();
+  const now = nowIso();
+  const info = db.prepare(
+    `UPDATE global_firm_employees
+     SET name = ?, email = ?, updated_at = ?
+     WHERE id = ? AND removed_at IS NULL`,
+  ).run(trimmedName, String(email || "").trim(), now, employeeId);
+
+  if (!info.changes) {
+    throw new Error("Mitarbeiter wurde nicht gefunden.");
+  }
+
+  return db.prepare(`SELECT * FROM global_firm_employees WHERE id = ?`).get(employeeId) || null;
 }

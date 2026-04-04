@@ -77,6 +77,7 @@ export const globalFirmEmployeesRepo = {
   listByFirm: (globalFirmId) => invoke("db:globalFirmEmployees:list", { globalFirmId }),
   getById: (employeeId) => invoke("db:globalFirmEmployees:get", { employeeId }),
   createEmployee: (p) => invoke("db:globalFirmEmployees:create", p),
+  updateEmployee: (p) => invoke("db:globalFirmEmployees:update", p),
 };
 
 export const projectPersonsRepo = {
