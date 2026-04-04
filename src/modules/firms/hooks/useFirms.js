@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { createFirm, createFirmEmployee, listFirms } from '../services/firmsService.js';
+import { createFirm, createFirmEmployee, listFirms, updateFirmEmployee } from '../services/firmsService.js';
 
 export function useFirms() {
   const [firms, setFirms] = useState([]);
@@ -49,12 +49,13 @@ export function useFirms() {
     }
   };
 
-  const createEmployeeForFirm = async ({ firmId, name }) => {
+  const createEmployeeForFirm = async ({ firmId, name, email }) => {
     try {
       setError('');
       const createdEmployee = await createFirmEmployee({
         globalFirmId: firmId,
         name,
+        email,
       });
       await loadFirms();
       setSelectedFirm((currentSelectedFirm) => {
@@ -80,6 +81,25 @@ export function useFirms() {
     }
   };
 
+  const updateEmployeeForFirm = async ({ firmId, employeeId, name, email }) => {
+    try {
+      setError('');
+      const updatedEmployee = await updateFirmEmployee({
+        employeeId,
+        name,
+        email,
+      });
+      const items = await loadFirms();
+      setSelectedFirm(items.find((firm) => String(firm.id) === String(firmId)) || null);
+      return updatedEmployee;
+    } catch (err) {
+      console.error('[firms] update employee failed', err);
+      const nextMessage = err?.message || 'Mitarbeiter konnte nicht bearbeitet werden.';
+      setError(nextMessage);
+      return null;
+    }
+  };
+
   return {
     firms,
     selectedFirm,
@@ -88,5 +108,6 @@ export function useFirms() {
     error,
     createGlobalFirm,
     createEmployeeForFirm,
+    updateEmployeeForFirm,
   };
 }

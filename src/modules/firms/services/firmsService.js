@@ -6,6 +6,7 @@ function mapEmployeeToUi(employee) {
   return {
     id: employee.id,
     name: employee.name || 'Mitarbeiter',
+    email: employee.email || '',
   };
 }
 
@@ -36,5 +37,10 @@ export async function createFirm(input) {
 
 export async function createFirmEmployee(input) {
   const row = await globalFirmEmployeesRepo.createEmployee(input);
+  return mapEmployeeToUi(row);
+}
+
+export async function updateFirmEmployee(input) {
+  const row = await globalFirmEmployeesRepo.updateEmployee(input);
   return mapEmployeeToUi(row);
 }

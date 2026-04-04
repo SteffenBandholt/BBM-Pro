@@ -16,6 +16,7 @@ export default function FirmDetailPanel({ firm }) {
               <li key={employee.id}>
                 <article className="project-participants__employee-card">
                   <p className="project-participants__employee-name">{employee.name}</p>
+                  <p className="project-participants__employee-role">{employee.email || 'Keine E-Mail gepflegt'}</p>
                 </article>
               </li>
             ))}
