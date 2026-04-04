@@ -17,10 +17,13 @@ export default function ProjectParticipantsPage() {
     activateEmployeeForProject,
     deactivateEmployeeForProject,
     createProjectLocalEmployeeForFirm,
+    updateProjectLocalEmployeeForFirm,
   } = useProjectParticipants(projectId);
   const [mode, setMode] = useState(null);
   const [newFirmName, setNewFirmName] = useState('');
   const [newProjectLocalEmployeeName, setNewProjectLocalEmployeeName] = useState('');
+  const [editingProjectLocalEmployeeId, setEditingProjectLocalEmployeeId] = useState(null);
+  const [editingProjectLocalEmployeeName, setEditingProjectLocalEmployeeName] = useState('');
   const [globalFirms, setGlobalFirms] = useState([]);
 
   useEffect(() => {
@@ -43,6 +46,11 @@ export default function ProjectParticipantsPage() {
       isActive = false;
     };
   }, []);
+
+  useEffect(() => {
+    setEditingProjectLocalEmployeeId(null);
+    setEditingProjectLocalEmployeeName('');
+  }, [selectedFirm?.id]);
 
   return (
     <section className="project-participants">
@@ -193,8 +201,66 @@ export default function ProjectParticipantsPage() {
                       {selectedFirm.projectLocalEmployees.map((employee) => (
                         <li key={employee.id}>
                           <article className="project-participants__employee-card">
-                            <p className="project-participants__employee-name">{employee.name}</p>
-                            <p className="project-participants__employee-role">Nur in diesem Projekt</p>
+                            {editingProjectLocalEmployeeId === employee.id ? (
+                              <>
+                                <label className="field">
+                                  <span>Name</span>
+                                  <input
+                                    value={editingProjectLocalEmployeeName}
+                                    onChange={(event) => setEditingProjectLocalEmployeeName(event.target.value)}
+                                    placeholder="Name des projektinternen Mitarbeiters"
+                                  />
+                                </label>
+                                <div className="form-actions">
+                                  <button
+                                    type="button"
+                                    className="button"
+                                    onClick={async () => {
+                                      const trimmedName = editingProjectLocalEmployeeName.trim();
+                                      if (!trimmedName) return;
+                                      const updated = await updateProjectLocalEmployeeForFirm({
+                                        projectFirmId: selectedFirm.id,
+                                        employeeId: employee.id,
+                                        name: trimmedName,
+                                      });
+                                      if (updated) {
+                                        setEditingProjectLocalEmployeeId(null);
+                                        setEditingProjectLocalEmployeeName('');
+                                      }
+                                    }}
+                                  >
+                                    Speichern
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="button button--secondary"
+                                    onClick={() => {
+                                      setEditingProjectLocalEmployeeId(null);
+                                      setEditingProjectLocalEmployeeName('');
+                                    }}
+                                  >
+                                    Abbrechen
+                                  </button>
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <p className="project-participants__employee-name">{employee.name}</p>
+                                <p className="project-participants__employee-role">Nur in diesem Projekt</p>
+                                <div className="form-actions">
+                                  <button
+                                    type="button"
+                                    className="button button--secondary"
+                                    onClick={() => {
+                                      setEditingProjectLocalEmployeeId(employee.id);
+                                      setEditingProjectLocalEmployeeName(employee.name || '');
+                                    }}
+                                  >
+                                    Bearbeiten
+                                  </button>
+                                </div>
+                              </>
+                            )}
                           </article>
                         </li>
                       ))}

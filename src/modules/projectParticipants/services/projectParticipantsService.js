@@ -121,6 +121,28 @@ export async function createProjectLocalEmployee({ projectFirmId, name }) {
   });
 }
 
+export async function updateProjectLocalEmployee({ projectFirmId, employeeId, name }) {
+  const [projectFirm, employee] = await Promise.all([
+    projectFirmsRepo.getById(projectFirmId),
+    projectLocalFirmEmployeesRepo.getById(employeeId),
+  ]);
+
+  if (!projectFirm) {
+    throw new Error('Projektfirma wurde nicht gefunden.');
+  }
+  if (!employee) {
+    throw new Error('Projektinterner Mitarbeiter wurde nicht gefunden.');
+  }
+  if (String(employee.project_firm_id) !== String(projectFirmId)) {
+    throw new Error('Projektinterner Mitarbeiter gehoert nicht zu dieser Projektfirma.');
+  }
+
+  return projectLocalFirmEmployeesRepo.updateEmployee({
+    employeeId,
+    name,
+  });
+}
+
 export async function activateProjectEmployee({ projectFirmId, globalEmployeeId }) {
   const [projectFirm, globalEmployee] = await Promise.all([
     projectFirmsRepo.getById(projectFirmId),

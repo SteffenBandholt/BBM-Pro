@@ -90,7 +90,9 @@ export const projectFirmEmployeesRepo = {
 
 export const projectLocalFirmEmployeesRepo = {
   listByProjectFirm: (projectFirmId) => invoke("db:projectLocalFirmEmployees:list", { projectFirmId }),
+  getById: (employeeId) => invoke("db:projectLocalFirmEmployees:get", { employeeId }),
   createEmployee: (p) => invoke("db:projectLocalFirmEmployees:create", p),
+  updateEmployee: (p) => invoke("db:projectLocalFirmEmployees:update", p),
 };
 
 export const meetingParticipantsRepo = {

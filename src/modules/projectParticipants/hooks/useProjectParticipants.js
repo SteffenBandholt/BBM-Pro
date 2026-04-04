@@ -7,6 +7,7 @@ import {
   deactivateProjectEmployee,
   listProjectParticipants,
   removeProjectFirm as removeProjectFirmService,
+  updateProjectLocalEmployee as updateProjectLocalEmployeeService,
 } from '../services/projectParticipantsService.js';
 
 export function useProjectParticipants(projectId) {
@@ -140,6 +141,20 @@ export function useProjectParticipants(projectId) {
     }
   };
 
+  const updateProjectLocalEmployeeForFirm = async ({ projectFirmId, employeeId, name }) => {
+    try {
+      setError('');
+      await updateProjectLocalEmployeeService({ projectFirmId, employeeId, name });
+      const items = await loadProjectParticipants();
+      setSelectedFirm(items.find((item) => String(item.id) === String(projectFirmId)) || null);
+      return true;
+    } catch (err) {
+      console.error('[project-participants] update local employee failed', err);
+      setError(err?.message || 'Projektinterner Mitarbeiter konnte nicht bearbeitet werden.');
+      return false;
+    }
+  };
+
   return {
     firms,
     selectedFirm,
@@ -152,5 +167,6 @@ export function useProjectParticipants(projectId) {
     activateEmployeeForProject,
     deactivateEmployeeForProject,
     createProjectLocalEmployeeForFirm,
+    updateProjectLocalEmployeeForFirm,
   };
 }
