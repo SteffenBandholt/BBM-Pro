@@ -99,7 +99,7 @@ export async function createMeeting({ projectId, title, date, protocolLabel }) {
     await carryOverFromMeeting(lastClosed.id, meeting.id);
   }
 
-  // Seed participants from existing project firms.
+  // Seed participants from the current project employee pool.
   await participantService.seedParticipantsFromProject(meeting.id, projectId);
 
   return meeting;

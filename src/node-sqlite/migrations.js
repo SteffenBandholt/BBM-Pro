@@ -104,6 +104,26 @@ function ensureProjectLocalFirmEmployeesTable(db) {
   `);
 }
 
+function ensureMeetingPersonParticipantsTable(db) {
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS meeting_person_participants (
+      meeting_id TEXT NOT NULL,
+      person_kind TEXT NOT NULL,
+      person_id TEXT NOT NULL,
+      firm_id TEXT NOT NULL,
+      person_name TEXT NOT NULL,
+      firm_name TEXT,
+      is_present INTEGER NOT NULL DEFAULT 0,
+      is_in_distribution INTEGER NOT NULL DEFAULT 0,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      PRIMARY KEY (meeting_id, person_kind, person_id),
+      FOREIGN KEY (meeting_id) REFERENCES meetings(id) ON DELETE CASCADE,
+      FOREIGN KEY (firm_id) REFERENCES project_firms(id) ON DELETE CASCADE
+    );
+  `);
+}
+
 // Minimal schema for Protokoll-Modul (projects, meetings, tops, meeting_tops, project_firms, project_persons, meeting_participants)
 const MIGRATIONS = [
   {
@@ -262,6 +282,11 @@ const MIGRATIONS = [
     id: 8,
     name: "project-local-firm-employees",
     run: ensureProjectLocalFirmEmployeesTable,
+  },
+  {
+    id: 9,
+    name: "meeting-person-participants",
+    run: ensureMeetingPersonParticipantsTable,
   },
 ];
 

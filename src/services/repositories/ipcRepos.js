@@ -96,5 +96,6 @@ export const projectLocalFirmEmployeesRepo = {
 export const meetingParticipantsRepo = {
   listMeetingParticipants: (meetingId) => invoke("db:participants:list", { meetingId }),
   setMeetingParticipant: (p) => invoke("db:participants:set", p),
-  seedFromProject: (meetingId, projectId) => invoke("db:participants:seed", { meetingId, projectId }),
+  removeMeetingParticipant: (p) => invoke("db:participants:remove", p),
+  replaceMeetingParticipants: (meetingId, participants) => invoke("db:participants:replace", { meetingId, participants }),
 };

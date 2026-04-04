@@ -25,7 +25,8 @@ import ProtocolTopList from '../components/ProtocolTopList.jsx';
 import { closeMeeting as closeMeetingService } from '../services/meetingCloseService.js';
 import { listProjectFirms } from '../services/projectFirmsService.js';
 import {
-  listMeetingParticipants,
+  listMeetingParticipantPool,
+  removeMeetingParticipant,
   setMeetingParticipant,
 } from '../services/meetingParticipantsService.js';
 import { generateProtocolPdf, generateTodoPdf, generateToplistPdf } from '../../../services/print/printController.js';
@@ -84,7 +85,7 @@ export default function MeetingDetailPage() {
   });
   const [tops, setTops] = useState([]);
   const [firms, setFirms] = useState([]);
-  const [participants, setParticipants] = useState([]);
+  const [participantPool, setParticipantPool] = useState([]);
   const [selectedTopId, setSelectedTopId] = useState(null);
   const [userSelectedTop, setUserSelectedTop] = useState(false);
   const [moveMode, setMoveMode] = useState(false);
@@ -109,8 +110,8 @@ export default function MeetingDetailPage() {
     if (!projectId) return;
     const firmRows = await listProjectFirms(projectId);
     setFirms(firmRows);
-    const parts = await listMeetingParticipants(meetingId);
-    setParticipants(parts);
+    const poolRows = await listMeetingParticipantPool(meetingId);
+    setParticipantPool(poolRows);
   };
 
   useEffect(() => {
@@ -209,6 +210,10 @@ export default function MeetingDetailPage() {
   const canMove = Boolean(selectedTop && !isMeetingClosed && !selectedTop.isCarriedOver && !selectedHasChildren);
   const canCreateTitle = Boolean(!isMeetingClosed && meeting.project_id);
   const canCreateTop = Boolean(!isMeetingClosed && selectedTop && selectedTop.level < 4);
+  const selectedParticipantCount = useMemo(
+    () => participantPool.filter((participant) => participant.isParticipant).length,
+    [participantPool],
+  );
 
   const commitEditorPatch = async (topId, patch) => {
     if (!topId || isMeetingClosed || !patch || !Object.keys(patch).length) {
@@ -619,15 +624,37 @@ export default function MeetingDetailPage() {
     }
   };
 
-  const handleToggleParticipant = async (firmId, field, value) => {
-    const current = participants.find((p) => String(p.firm_id) === String(firmId));
-    await setMeetingParticipant({
-      meetingId,
-      firmId,
-      is_present: field === 'is_present' ? value : current?.is_present || 0,
-      is_in_distribution: field === 'is_in_distribution' ? value : current?.is_in_distribution || 0,
-    });
-    setParticipants(await listMeetingParticipants(meetingId));
+  const handleToggleParticipant = async (participant, field, value) => {
+    if (field === 'isParticipant') {
+      if (value) {
+        await setMeetingParticipant({
+          meetingId,
+          personKind: participant.personKind,
+          personId: participant.personId,
+          firmId: participant.firmId,
+          is_present: participant.is_present || false,
+          is_in_distribution: participant.is_in_distribution || false,
+        });
+      } else {
+        await removeMeetingParticipant({
+          meetingId,
+          personKind: participant.personKind,
+          personId: participant.personId,
+          firmId: participant.firmId,
+        });
+      }
+    } else {
+      await setMeetingParticipant({
+        meetingId,
+        personKind: participant.personKind,
+        personId: participant.personId,
+        firmId: participant.firmId,
+        is_present: field === 'is_present' ? value : participant.is_present || false,
+        is_in_distribution: field === 'is_in_distribution' ? value : participant.is_in_distribution || false,
+      });
+    }
+
+    setParticipantPool(await listMeetingParticipantPool(meetingId));
   };
 
   const handleDownloadPdf = () => {
@@ -699,6 +726,75 @@ export default function MeetingDetailPage() {
           onEndProtocol={handleEndProtocol}
           onClose={handleClose}
         />
+
+        <section className="project-participants__panel protocol-participants">
+          <div className="protocol-participants__header">
+            <div>
+              <h2>Teilnehmer</h2>
+              <p>Projektmitarbeiter-Pool fuer diese Besprechung</p>
+            </div>
+            <span className="project-participants__badge">
+              {selectedParticipantCount} / {participantPool.length} Teilnehmer
+            </span>
+          </div>
+
+          {participantPool.length === 0 ? (
+            <p>Im Projekt sind noch keine Mitarbeiter verfuegbar.</p>
+          ) : (
+            <ul className="project-participants__employees">
+              {participantPool.map((participant) => (
+                <li key={`${participant.personKind}:${participant.personId}`}>
+                  <article className="project-participants__employee-card protocol-participants__card">
+                    <div>
+                      <p className="project-participants__employee-name">{participant.personName}</p>
+                      <p className="project-participants__employee-role">
+                        {participant.firmName} - {participant.source === 'global' ? 'Globaler Mitarbeiter' : 'Projektinterner Mitarbeiter'}
+                      </p>
+                    </div>
+
+                    <div className="protocol-participants__toggles">
+                      <label className="protocol-participants__toggle">
+                        <input
+                          type="checkbox"
+                          checked={participant.isParticipant}
+                          onChange={(event) => {
+                            void handleToggleParticipant(participant, 'isParticipant', event.target.checked);
+                          }}
+                          disabled={isMeetingClosed}
+                        />
+                        <span>Teilnehmer</span>
+                      </label>
+
+                      <label className="protocol-participants__toggle">
+                        <input
+                          type="checkbox"
+                          checked={!!participant.is_present}
+                          onChange={(event) => {
+                            void handleToggleParticipant(participant, 'is_present', event.target.checked);
+                          }}
+                          disabled={isMeetingClosed || !participant.isParticipant}
+                        />
+                        <span>Anwesend</span>
+                      </label>
+
+                      <label className="protocol-participants__toggle">
+                        <input
+                          type="checkbox"
+                          checked={!!participant.is_in_distribution}
+                          onChange={(event) => {
+                            void handleToggleParticipant(participant, 'is_in_distribution', event.target.checked);
+                          }}
+                          disabled={isMeetingClosed || !participant.isParticipant}
+                        />
+                        <span>Verteiler</span>
+                      </label>
+                    </div>
+                  </article>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
 
         <div className="protocol-layout">
           <div className="protocol-main">

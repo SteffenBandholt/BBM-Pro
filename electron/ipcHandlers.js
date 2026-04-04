@@ -73,7 +73,8 @@ export function registerDbIpcHandlers(ipcMain) {
 
   ipcMain.handle('db:participants:list', wrap((p) => meetingParticipantsRepo.listMeetingParticipants(p.meetingId)));
   ipcMain.handle('db:participants:set', wrap((p) => meetingParticipantsRepo.setMeetingParticipant(p)));
-  ipcMain.handle('db:participants:seed', wrap((p) => meetingParticipantsRepo.seedFromProject(p.meetingId, p.projectId)));
+  ipcMain.handle('db:participants:remove', wrap((p) => meetingParticipantsRepo.removeMeetingParticipant(p)));
+  ipcMain.handle('db:participants:replace', wrap((p) => meetingParticipantsRepo.replaceMeetingParticipants(p.meetingId, p.participants || [])));
 
   ipcMain.handle('db:print:get', wrap((p) =>
     getPrintData(p, {

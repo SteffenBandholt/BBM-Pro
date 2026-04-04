@@ -1,67 +1,98 @@
 import { readDb, writeDb } from "../storage/localDb.js";
 import { nowIso } from "../utils/time.js";
-import { listByProject as listFirmsByProject } from "./projectFirmsRepo.js";
 
-function key(meetingId, firmId) {
-  return `${meetingId}::firm::${firmId}`;
+function key(meetingId, personKind, personId) {
+  return `${meetingId}::${personKind}::${personId}`;
 }
 
 export function listMeetingParticipants(meetingId) {
   const db = readDb();
-  return db.meetingParticipants
+  return (db.meetingPersonParticipants || [])
     .filter((p) => String(p.meeting_id) === String(meetingId))
     .map((p) => ({ ...p }));
 }
 
-export function setMeetingParticipant({ meetingId, firmId, is_present, is_in_distribution }) {
+export function setMeetingParticipant({
+  meetingId,
+  personKind,
+  personId,
+  firmId,
+  personName,
+  firmName,
+  is_present,
+  is_in_distribution,
+}) {
   const db = readDb();
-  const k = key(meetingId, firmId);
+  const k = key(meetingId, personKind, personId);
   const now = nowIso();
   let found = false;
-  db.meetingParticipants = db.meetingParticipants.map((p) => {
-    if (key(p.meeting_id, p.firm_id) !== k) return p;
+  db.meetingPersonParticipants = (db.meetingPersonParticipants || []).map((p) => {
+    if (key(p.meeting_id, p.person_kind, p.person_id) !== k) return p;
     found = true;
     return {
       ...p,
+      firm_id: firmId,
+      person_name: personName,
+      firm_name: firmName || "",
       is_present: is_present ? 1 : 0,
       is_in_distribution: is_in_distribution ? 1 : 0,
       updated_at: now,
     };
   });
   if (!found) {
-    db.meetingParticipants.push({
+    db.meetingPersonParticipants = [
+      ...(db.meetingPersonParticipants || []),
+      {
       meeting_id: meetingId,
-      kind: "firm",
+      person_kind: personKind,
+      person_id: personId,
       firm_id: firmId,
+      person_name: personName,
+      firm_name: firmName || "",
       is_present: is_present ? 1 : 0,
       is_in_distribution: is_in_distribution ? 1 : 0,
       created_at: now,
       updated_at: now,
-    });
+      },
+    ];
   }
   writeDb(db);
   return { ok: true };
 }
 
-export function seedFromProject(meetingId, projectId) {
-  const firms = listFirmsByProject(projectId);
+export function removeMeetingParticipant({ meetingId, personKind, personId }) {
   const db = readDb();
-  const existingKeys = new Set(db.meetingParticipants.map((p) => key(p.meeting_id, p.firm_id)));
+  const beforeCount = (db.meetingPersonParticipants || []).length;
+  db.meetingPersonParticipants = (db.meetingPersonParticipants || []).filter(
+    (participant) => key(participant.meeting_id, participant.person_kind, participant.person_id) !== key(meetingId, personKind, personId),
+  );
+  writeDb(db);
+  return { removed: beforeCount - db.meetingPersonParticipants.length };
+}
+
+export function replaceMeetingParticipants(meetingId, participants) {
+  const db = readDb();
   const now = nowIso();
-  const toInsert = firms.filter((f) => !existingKeys.has(key(meetingId, f.id)));
-  if (!toInsert.length) return { inserted: 0 };
-  db.meetingParticipants = [
-    ...db.meetingParticipants,
-    ...toInsert.map((f) => ({
+  const unchangedParticipants = (db.meetingPersonParticipants || []).filter(
+    (participant) => String(participant.meeting_id) !== String(meetingId),
+  );
+
+  db.meetingPersonParticipants = [
+    ...unchangedParticipants,
+    ...(participants || []).map((participant) => ({
       meeting_id: meetingId,
-      kind: "firm",
-      firm_id: f.id,
-      is_present: 0,
-      is_in_distribution: 0,
+      person_kind: participant.personKind,
+      person_id: participant.personId,
+      firm_id: participant.firmId,
+      person_name: participant.personName,
+      firm_name: participant.firmName || "",
+      is_present: participant.is_present ? 1 : 0,
+      is_in_distribution: participant.is_in_distribution ? 1 : 0,
       created_at: now,
       updated_at: now,
     })),
   ];
+
   writeDb(db);
-  return { inserted: toInsert.length };
+  return { inserted: (participants || []).length };
 }

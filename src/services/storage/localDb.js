@@ -16,6 +16,7 @@ function defaultDb() {
     projectLocalFirmEmployees: [],
     projectPersons: [],
     meetingParticipants: [],
+    meetingPersonParticipants: [],
   };
 }
 
@@ -44,6 +45,7 @@ function readRaw() {
       projectLocalFirmEmployees: parsed.projectLocalFirmEmployees ?? [],
       projectPersons: parsed.projectPersons ?? [],
       meetingParticipants: parsed.meetingParticipants ?? [],
+      meetingPersonParticipants: parsed.meetingPersonParticipants ?? [],
     };
     return cache;
   } catch (_err) {
@@ -73,6 +75,7 @@ export function readDb() {
     projectLocalFirmEmployees: [...db.projectLocalFirmEmployees],
     projectPersons: [...db.projectPersons],
     meetingParticipants: [...db.meetingParticipants],
+    meetingPersonParticipants: [...db.meetingPersonParticipants],
   };
 }
 
